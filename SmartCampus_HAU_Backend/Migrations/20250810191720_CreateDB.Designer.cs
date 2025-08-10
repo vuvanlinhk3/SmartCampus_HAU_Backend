@@ -11,7 +11,7 @@ using SmartCampus_HAU_Backend.Data;
 
 namespace SmartCampus_HAU_Backend.Migrations
 {
-    [DbContext(typeof(ApplicationDBContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     [Migration("20250810191720_CreateDB")]
     partial class CreateDB
     {

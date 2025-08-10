@@ -10,7 +10,7 @@ using SmartCampus_HAU_Backend.Data;
 
 namespace SmartCampus_HAU_Backend.Migrations
 {
-    [DbContext(typeof(ApplicationDBContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDBContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

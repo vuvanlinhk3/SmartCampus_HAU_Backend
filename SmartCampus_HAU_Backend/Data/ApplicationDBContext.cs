@@ -6,9 +6,13 @@ using SmartCampus_HAU_Backend.Models.Entities;
 
 namespace SmartCampus_HAU_Backend.Data
 {
-    public class ApplicationDBContext : IdentityDbContext<User>
+    public class ApplicationDbContext : IdentityDbContext<User>
     {
-        public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options) { }
+        public ApplicationDbContext()
+        {
+        }
+
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         public DbSet<Room> Rooms => Set<Room>();
         public DbSet<RoomDevice> RoomDevices => Set<RoomDevice>();
@@ -66,16 +70,16 @@ namespace SmartCampus_HAU_Backend.Data
         }
     }
 
-    public class ApplicationDBContextFactory : IDesignTimeDbContextFactory<ApplicationDBContext>
+    public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
     {
-        public ApplicationDBContext CreateDbContext(string[] args)
+        public ApplicationDbContext CreateDbContext(string[] args)
         {
-            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDBContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
             // Connection string cho design-time (có thể giống hoặc khác runtime)
             optionsBuilder.UseSqlServer("Data Source=DESKTOP-59E3KF3\\TEST;Initial Catalog=CampusManager;Integrated Security=True;Trust Server Certificate=True");
 
-            return new ApplicationDBContext(optionsBuilder.Options);
+            return new ApplicationDbContext(optionsBuilder.Options);
         }
     }
 }
