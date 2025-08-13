@@ -23,12 +23,10 @@ namespace SmartCampus_HAU_Backend.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Unique constraints
             modelBuilder.Entity<Room>()
                 .HasIndex(x => x.RoomName)
                 .IsUnique();
 
-            // Check constraints
             modelBuilder.Entity<RoomDevice>()
                 .ToTable(tb => tb.HasCheckConstraint("CK_RoomDevices_Quantity_NonNegative", "[quantity] >= 0"));
 
@@ -38,7 +36,6 @@ namespace SmartCampus_HAU_Backend.Data
             modelBuilder.Entity<Booking>()
                 .ToTable(tb => tb.HasCheckConstraint("CK_Bookings_Periods_1_12", "[periods] >= 1 AND [periods] <= 12"));
 
-            // Default values
             modelBuilder.Entity<RoomDevice>()
                 .Property(x => x.Status)
                 .HasDefaultValue(false);
@@ -51,8 +48,6 @@ namespace SmartCampus_HAU_Backend.Data
                 .Property(x => x.CreatedAt)
                 .HasDefaultValueSql("GETDATE()");
 
-            // Delete behaviors đã được xử lý bởi [ForeignKey] và [InverseProperty]
-            // Nhưng nếu muốn CASCADE rõ ràng:
             modelBuilder.Entity<RoomDevice>()
                 .HasOne(x => x.Room)
                 .WithMany(r => r.RoomDevices)
@@ -76,7 +71,6 @@ namespace SmartCampus_HAU_Backend.Data
         {
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
-            // Connection string cho design-time (có thể giống hoặc khác runtime)
             optionsBuilder.UseSqlServer("Data Source=DESKTOP-59E3KF3\\TEST;Initial Catalog=CampusManager;Integrated Security=True;Trust Server Certificate=True");
 
             return new ApplicationDbContext(optionsBuilder.Options);

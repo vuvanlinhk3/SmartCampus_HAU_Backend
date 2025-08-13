@@ -21,5 +21,5 @@ public partial class User : IdentityUser
 
     [Column("full_name")]
     [StringLength(255)]
-    public string FullName { get; set; } = null!;
+    public string? FullName { get; set; }
 }

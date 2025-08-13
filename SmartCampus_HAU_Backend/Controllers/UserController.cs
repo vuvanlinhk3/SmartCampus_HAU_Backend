@@ -28,8 +28,26 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}"); // Fix: StatusCode is now accessible
+                return StatusCode(500, $"Internal server error: {ex.Message}"); 
             }
+        }
+
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
+        {
+            return await _userService.ConfirmEmailAsync(userId, token);
+        }
+
+        [HttpPost("resend-confirmation")]
+        public async Task<IActionResult> ResendConfirmation([FromBody] string email)
+        {
+            return await _userService.ResendEmailConfirmationAsync(email);
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+        {
+            return await _userService.LoginAsync(loginDTO);
         }
     }
 }
