@@ -115,27 +115,27 @@ namespace SmartCampus_HAU_Backend.Services
         {
             if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
             {
-                return new BadRequestObjectResult("Invalid confirmation request");
+                return new BadRequestObjectResult("Thông tin xác nhận không hợp lệ");
             }
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return new BadRequestObjectResult("User not found");
+                return new BadRequestObjectResult("Không tìm thấy người dùng");
             }
 
             if (user.EmailConfirmed)
             {
-                return new OkObjectResult("Email already confirmed");
+                return new OkObjectResult("Email đã tồn tại");
             }
 
             var result = await _userManager.ConfirmEmailAsync(user, token);
             if (result.Succeeded)
             {
-                return new OkObjectResult("Email confirmed successfully. You can now login to your account.");
+                return new OkObjectResult("Email đã được xác nhận. Hiện tại bạn có thể đăng nhập");
             }
 
-            return new BadRequestObjectResult("Email confirmation failed");
+            return new BadRequestObjectResult("Xác nhận email không thành công");
         }
 
         public async Task<IActionResult> ResendEmailConfirmationAsync(string email)
@@ -143,22 +143,22 @@ namespace SmartCampus_HAU_Backend.Services
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                return new BadRequestObjectResult("User not found");
+                return new BadRequestObjectResult("Không tìm thấy người dùng");
             }
 
             if (user.EmailConfirmed)
             {
-                return new BadRequestObjectResult("Email already confirmed");
+                return new BadRequestObjectResult("Email đã được xác nhận");
             }
 
             try
             {
                 await SendEmailConfirmationAsync(user);
-                return new OkObjectResult("Confirmation email sent successfully");
+                return new OkObjectResult("Email xác nhận đã được gửi");
             }
             catch (Exception ex)
             {
-                return new ObjectResult($"Failed to send email: {ex.Message}") { StatusCode = 500 };
+                return new ObjectResult($"Lỗi khi gửi tới email: {ex.Message}") { StatusCode = 500 };
             }
         }
 
