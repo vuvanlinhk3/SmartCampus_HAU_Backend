@@ -47,7 +47,96 @@ namespace SmartCampus_HAU_Backend.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
         {
-            return await _userService.LoginAsync(loginDTO);
+            var result = await _userService.LoginAsync(loginDTO);
+
+            if (result is OkObjectResult okResult && okResult.Value != null)
+            {
+                try
+                {
+                    var resultValue = okResult.Value;
+                    var resultType = resultValue.GetType();
+
+                    var userIdProperty = resultType.GetProperty("UserId");
+                    if (userIdProperty != null)
+                    {
+                        var userId = userIdProperty.GetValue(resultValue)?.ToString();
+                        if (!string.IsNullOrEmpty(userId))
+                        {
+                            HttpContext.Session.SetString("UserId", userId);
+                            HttpContext.Session.SetString("UserName", loginDTO.UserName);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to save session: {ex.Message}");
+                }
+            }
+            return result;
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] string email)
+        {
+            return await _userService.SendForgotPasswordEmail(email);
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO resetDTO)
+        {
+            if (resetDTO == null || string.IsNullOrEmpty(resetDTO.Email) ||
+                string.IsNullOrEmpty(resetDTO.Token) || string.IsNullOrEmpty(resetDTO.NewPassword))
+            {
+                return BadRequest("Thông tin đặt lại mật khẩu không hợp lệ");
+            }
+
+            try
+            {
+                return await _userService.ResetPasswordAsync(resetDTO.Email, resetDTO.Token, resetDTO.NewPassword);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPut("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changePasswordDTO)
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Vui lòng đăng nhập để sử dụng chức năng này");
+            }
+
+            return await _userService.ChangePasswordAsync(userId, changePasswordDTO);
+        }
+
+        [HttpPut("update-info")]
+        public async Task<IActionResult> UpdateUserInfo([FromBody] UpdateUserInfoDTO updateUserInfoDTO)
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Vui lòng đăng nhập để sử dụng chức năng này");
+            }
+
+            return await _userService.UpdateUserInfoAsync(userId, updateUserInfoDTO);
+        }
+
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetUserProfile()
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Vui lòng đăng nhập để sử dụng chức năng này");
+            }
+
+            return await _userService.GetUserInfoAsync(userId);
         }
     }
 }

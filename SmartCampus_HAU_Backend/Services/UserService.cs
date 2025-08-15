@@ -4,6 +4,7 @@ using SmartCampus_HAU_Backend.Models.Entities;
 using SmartCampus_HAU_Backend.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace SmartCampus_HAU_Backend.Services
 {
@@ -207,8 +208,343 @@ namespace SmartCampus_HAU_Backend.Services
 
             return new OkObjectResult(new
             {
-                Message = "Đăng nhập thành công"
+                Message = "Đăng nhập thành công",
+                UserId = user.Id
             });
+        }
+
+        public async Task<IActionResult> SendForgotPasswordEmail(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null || !user.EmailConfirmed)
+            {
+                return new BadRequestObjectResult("Email không tồn tại hoặc chưa xác nhận");
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var resetLink = $"https://localhost:7072/api/User/reset-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
+
+            var subject = "Đặt lại mật khẩu";
+            var body = $@"
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+                    <h2 style='color: #e74c3c;'>Đặt lại mật khẩu SmartCampus HAU</h2>
+                    <p>Xin chào <strong>{user.FullName}</strong>,</p>
+                    <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn tại SmartCampus HAU. Để tiếp tục, vui lòng nhấp vào nút bên dưới:</p>
+                    
+                    <div style='text-align: center; margin: 30px 0;'>
+                        <a href='{resetLink}' 
+                           style='background-color: #e74c3c; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;'>
+                            Đặt lại mật khẩu
+                        </a>
+                    </div>
+                    
+                    <p style='color: #e74c3c; font-size: 14px;'>
+                        <strong>Lưu ý:</strong> Liên kết này sẽ hết hạn sau 1 giờ vì lý do bảo mật. Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này và tài khoản của bạn sẽ vẫn an toàn.
+                    </p>
+                    
+                    <div style='background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 15px; margin: 20px 0;'>
+                        <p style='margin: 0; color: #856404; font-size: 14px;'>
+                            <strong>⚠️ Bảo mật:</strong> Nếu bạn không yêu cầu đặt lại mật khẩu, có thể ai đó đang cố gắng truy cập tài khoản của bạn. Vui lòng liên hệ bộ phận hỗ trợ ngay lập tức.
+                        </p>
+                    </div>
+                    
+                    <hr style='margin: 30px 0; border: none; border-top: 1px solid #ecf0f1;'>
+                    <p style='font-size: 12px; color: #7f8c8d;'>
+                        Email này được gửi tự động từ hệ thống SmartCampus HAU. Vui lòng không trả lời email này.
+                        <br>Nếu cần hỗ trợ, vui lòng liên hệ: support@smartcampus-hau.edu.vn
+                    </p>
+                </div>";
+
+
+            await _emailService.SendEmailAsync(email, subject, body);
+
+            return new OkObjectResult("Email đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra email.");
+        }
+
+        public async Task<IActionResult> ResetPasswordAsync(string email, string token, string newPassword)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    return new BadRequestObjectResult("Email không hợp lệ");
+                }
+
+                var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+
+                if (!result.Succeeded)
+                {
+                    try
+                    {
+                        var decodedToken = Uri.UnescapeDataString(token);
+                        result = await _userManager.ResetPasswordAsync(user, decodedToken, newPassword);
+                    }
+                    catch (Exception)
+                    {
+                        
+                    }
+                }
+
+                if (result.Succeeded)
+                {
+                    return new OkObjectResult("Đặt lại mật khẩu thành công");
+                }
+
+                return new BadRequestObjectResult(new
+                {
+                    Message = "Token không hợp lệ hoặc đã hết hạn",
+                    Errors = result.Errors.Select(e => e.Description)
+                });
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult($"Lỗi: {ex.Message}") { StatusCode = 500 };
+            }
+        }
+
+        public async Task<IActionResult> ChangePasswordAsync(string userId, ChangePasswordDTO changePasswordDTO)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(userId) || changePasswordDTO == null ||
+                    string.IsNullOrEmpty(changePasswordDTO.CurrentPassword) ||
+                    string.IsNullOrEmpty(changePasswordDTO.NewPassword))
+                {
+                    return new BadRequestObjectResult("Thông tin đổi mật khẩu không hợp lệ");
+                }
+
+                if (changePasswordDTO.NewPassword != changePasswordDTO.ConfirmPassword)
+                {
+                    return new BadRequestObjectResult("Mật khẩu mới và xác nhận mật khẩu không khớp");
+                }
+
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return new BadRequestObjectResult("Không tìm thấy người dùng");
+                }
+
+                if (!user.EmailConfirmed)
+                {
+                    return new BadRequestObjectResult("Email chưa được xác nhận. Vui lòng xác nhận email trước khi đổi mật khẩu");
+                }
+
+                var result = await _userManager.ChangePasswordAsync(user, changePasswordDTO.CurrentPassword, changePasswordDTO.NewPassword);
+
+                if (result.Succeeded)
+                {
+                    try
+                    {
+                        await SendPasswordChangedNotificationAsync(user);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to send password change notification: {ex.Message}");
+                    }
+
+                    return new OkObjectResult(new
+                    {
+                        Message = "Đổi mật khẩu thành công",
+                        Timestamp = DateTime.UtcNow
+                    });
+                }
+
+                var errors = result.Errors.Select(e => e.Description).ToList();
+
+                if (errors.Any(e => e.Contains("current password") || e.Contains("incorrect")))
+                {
+                    return new BadRequestObjectResult("Mật khẩu hiện tại không chính xác");
+                }
+
+                return new BadRequestObjectResult(new
+                {
+                    Message = "Đổi mật khẩu thất bại",
+                    Errors = errors
+                });
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult($"Lỗi hệ thống: {ex.Message}") { StatusCode = 500 };
+            }
+        }
+
+        private async Task SendPasswordChangedNotificationAsync(User user)
+        {
+            var subject = "Mật khẩu đã được thay đổi - SmartCampus HAU";
+            var emailBody = $@"
+        <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+            <h2 style='color: #27ae60;'>Mật khẩu đã được thay đổi thành công</h2>
+            <p>Xin chào <strong>{user.FullName}</strong>,</p>
+            <p>Mật khẩu cho tài khoản SmartCampus HAU của bạn đã được thay đổi thành công vào lúc:</p>
+            
+            <div style='background-color: #e8f5e8; border-left: 4px solid #27ae60; padding: 15px; margin: 20px 0;'>
+                <p style='margin: 0;'><strong>Thời gian:</strong> {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")} (UTC+7)</p>
+                <p style='margin: 5px 0 0 0;'><strong>Tài khoản:</strong> {user.UserName} ({user.Email})</p>
+            </div>
+            
+            <p>Nếu <strong>bạn không thực hiện</strong> thay đổi này, vui lòng:</p>
+            <ul>
+                <li>Đăng nhập ngay để kiểm tra tài khoản</li>
+                <li>Liên hệ bộ phận hỗ trợ: support@smartcampus-hau.edu.vn</li>
+                <li>Thay đổi mật khẩu mới ngay lập tức</li>
+            </ul>
+            
+            <div style='background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 15px; margin: 20px 0;'>
+                <p style='margin: 0; color: #856404; font-size: 14px;'>
+                    <strong>💡 Lời khuyên bảo mật:</strong> Sử dụng mật khẩu mạnh có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.
+                </p>
+            </div>
+            
+            <hr style='margin: 30px 0; border: none; border-top: 1px solid #ecf0f1;'>
+            <p style='font-size: 12px; color: #7f8c8d;'>
+                Email này được gửi tự động từ hệ thống SmartCampus HAU. Vui lòng không trả lời email này.
+            </p>
+        </div>";
+
+            await _emailService.SendEmailAsync(user.Email!, subject, emailBody);
+        }
+
+        public async Task<IActionResult> UpdateUserInfoAsync(string userId, UpdateUserInfoDTO updateUserInfoDTO)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(userId) || updateUserInfoDTO == null)
+                {
+                    return new BadRequestObjectResult("Thông tin cập nhật không hợp lệ");
+                }
+
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return new BadRequestObjectResult("Không tìm thấy người dùng");
+                }
+
+                if (!user.EmailConfirmed)
+                {
+                    return new BadRequestObjectResult("Email chưa được xác nhận. Vui lòng xác nhận email trước khi cập nhật thông tin");
+                }
+
+                string oldFullName = user.FullName;
+                string oldPhoneNumber = user.PhoneNumber;
+
+                bool hasChanges = false;
+
+                if (!string.IsNullOrWhiteSpace(updateUserInfoDTO.FullName) &&
+                    updateUserInfoDTO.FullName.Trim() != user.FullName)
+                {
+                    user.FullName = updateUserInfoDTO.FullName.Trim();
+                    hasChanges = true;
+                }
+
+                if (updateUserInfoDTO.PhoneNumber != user.PhoneNumber)
+                {
+                    // Kiểm tra số điện thoại đã được sử dụng bởi user khác chưa
+                    if (!string.IsNullOrWhiteSpace(updateUserInfoDTO.PhoneNumber))
+                    {
+                        var existingUserWithPhone = await _userManager.Users
+                            .FirstOrDefaultAsync(u => u.PhoneNumber == updateUserInfoDTO.PhoneNumber && u.Id != userId);
+
+                        if (existingUserWithPhone != null)
+                        {
+                            return new BadRequestObjectResult("Số điện thoại đã được sử dụng bởi tài khoản khác");
+                        }
+                    }
+
+                    user.PhoneNumber = string.IsNullOrWhiteSpace(updateUserInfoDTO.PhoneNumber)
+                        ? null
+                        : updateUserInfoDTO.PhoneNumber.Trim();
+                    hasChanges = true;
+                }
+
+                if (!hasChanges)
+                {
+                    return new OkObjectResult(new
+                    {
+                        Message = "Không có thay đổi nào được thực hiện",
+                        User = new
+                        {
+                            Id = user.Id,
+                            UserName = user.UserName,
+                            Email = user.Email,
+                            FullName = user.FullName,
+                            PhoneNumber = user.PhoneNumber
+                        }
+                    });
+                }
+
+                var result = await _userManager.UpdateAsync(user);
+
+                if (result.Succeeded)
+                {
+                    try
+                    {
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to send info change notification: {ex.Message}");
+                    }
+
+                    return new OkObjectResult(new
+                    {
+                        Message = "Cập nhật thông tin thành công",
+                        User = new
+                        {
+                            Id = user.Id,
+                            UserName = user.UserName,
+                            Email = user.Email,
+                            FullName = user.FullName,
+                            PhoneNumber = user.PhoneNumber
+                        },
+                        UpdatedAt = DateTime.UtcNow
+                    });
+                }
+
+                var errors = result.Errors.Select(e => e.Description).ToList();
+                return new BadRequestObjectResult(new
+                {
+                    Message = "Cập nhật thông tin thất bại",
+                    Errors = errors
+                });
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult($"Lỗi hệ thống: {ex.Message}") { StatusCode = 500 };
+            }
+        }
+
+        public async Task<IActionResult> GetUserInfoAsync(string userId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return new BadRequestObjectResult("User ID không hợp lệ");
+                }
+
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return new BadRequestObjectResult("Không tìm thấy người dùng");
+                }
+
+                return new OkObjectResult(new
+                {
+                    Message = "Lấy thông tin người dùng thành công",
+                    User = new
+                    {
+                        UserName = user.UserName,
+                        Email = user.Email,
+                        FullName = user.FullName,
+                        PhoneNumber = user.PhoneNumber,
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult($"Lỗi hệ thống: {ex.Message}") { StatusCode = 500 };
+            }
         }
     }
 }
