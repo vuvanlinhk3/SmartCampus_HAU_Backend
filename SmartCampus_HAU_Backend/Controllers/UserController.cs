@@ -28,7 +28,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}"); 
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
 
@@ -137,6 +137,16 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
 
             return await _userService.GetUserInfoAsync(userId);
+        }
+
+        [HttpDelete("delete")]
+        public async Task<IActionResult> DeleteUser([FromQuery] string username)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                return BadRequest("Tên người dùng không được để trống");
+            }
+            return await _userService.DeleteUsersAsync(username);
         }
     }
 }

@@ -14,5 +14,6 @@ namespace SmartCampus_HAU_Backend.Services.Interfaces
         Task<IActionResult> ChangePasswordAsync(string userId, ChangePasswordDTO changePasswordDTO);
         Task<IActionResult> UpdateUserInfoAsync(string userId, UpdateUserInfoDTO updateUserInfoDTO);
         Task<IActionResult> GetUserInfoAsync(string userId);
+        Task<IActionResult> DeleteUsersAsync(string username);
     }
 }

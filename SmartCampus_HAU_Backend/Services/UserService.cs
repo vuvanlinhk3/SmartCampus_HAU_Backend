@@ -282,7 +282,7 @@ namespace SmartCampus_HAU_Backend.Services
                     }
                     catch (Exception)
                     {
-                        
+
                     }
                 }
 
@@ -546,5 +546,33 @@ namespace SmartCampus_HAU_Backend.Services
                 return new ObjectResult($"Lỗi hệ thống: {ex.Message}") { StatusCode = 500 };
             }
         }
+
+        public async Task<IActionResult> DeleteUsersAsync(string username)
+        {
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(user => user.UserName == username);   
+                if (user == null)
+                {
+                    return new OkObjectResult("Người dùng không tồn tại");
+                }
+
+                var result = await _userManager.DeleteAsync(user!);
+                if (!result.Succeeded)
+                {
+                    return new BadRequestObjectResult(new
+                    {
+                        Message = "Xóa người dùng thất bại",
+                        Errors = result.Errors.Select(e => e.Description)
+                    });
+                }
+                return new OkObjectResult("Đã xóa người dùng thành công");
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult($"Lỗi hệ thống: {ex.Message}") { StatusCode = 500 };
+            }
+        }
     }
 }
+
