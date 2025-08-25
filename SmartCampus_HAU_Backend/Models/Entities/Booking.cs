@@ -40,11 +40,11 @@ public partial class Booking
 
     [Column("start_period")]
     [Required]
-    public int StartPeriod { get; set; }
+    public int? StartPeriod { get; set; }
 
     [Column("periods")]
     [Required]
-    public int Periods { get; set; }
+    public int? Periods { get; set; }
 
     [Column("created_at", TypeName = "datetime")]
     public DateTime CreatedAt { get; set; }
