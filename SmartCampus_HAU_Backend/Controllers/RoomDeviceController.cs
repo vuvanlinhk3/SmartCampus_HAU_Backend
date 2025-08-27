@@ -14,7 +14,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             _roomDeviceService = roomDeviceService;
         }
 
-        [HttpGet("room/{roomId}")]
+        [HttpGet("room/device/getall/{roomId}")]
         public async Task<IActionResult> GetAllRoomDevices([FromBody] int roomId)
         {
             try
@@ -28,7 +28,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
-        [HttpGet("room/{roomDeviceId}")]
+        [HttpGet("room/device/get/{roomDeviceId}")]
         public async Task<IActionResult> GetRoomDevicesById([FromBody] int roomDeviceId)
         {
             try
@@ -42,7 +42,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
-        [HttpPost("add")]
+        [HttpPost("room/device/add")]
         public async Task<IActionResult> AddRoomDevice([FromBody] int roomId, RoomDeviceDTO createRoomDeviceDTO)
         {
             if (createRoomDeviceDTO == null)
@@ -60,7 +60,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
-        [HttpPut("update/{roomDeviceId}")]
+        [HttpPut("room/device/update/{roomDeviceId}")]
         public async Task<IActionResult> UpdateRoomDevice([FromBody] int roomDeviceId, RoomDeviceDTO updateRoomDeviceDTO)
         {
             if (updateRoomDeviceDTO == null || roomDeviceId != updateRoomDeviceDTO.RoomDeviceId)
@@ -78,7 +78,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
-        [HttpDelete("delete/{roomDeviceId}")]
+        [HttpDelete("room/device/delete/{roomDeviceId}")]
         public async Task<IActionResult> DeleteRoomDevice([FromBody] int roomDeviceId)
         {
             try

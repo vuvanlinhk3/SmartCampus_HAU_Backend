@@ -14,7 +14,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             _userService = userService;
         }
 
-        [HttpPost("register")]
+        [HttpPost("user/register")]
         public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
         {
             if (registerDTO == null)
@@ -32,19 +32,19 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
-        [HttpGet("confirm-email")]
+        [HttpGet("user/confirm-email")]
         public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
         {
             return await _userService.ConfirmEmailAsync(userId, token);
         }
 
-        [HttpPost("resend-confirmation")]
+        [HttpPost("user/resend-confirmation")]
         public async Task<IActionResult> ResendConfirmation([FromBody] string email)
         {
             return await _userService.ResendEmailConfirmationAsync(email);
         }
 
-        [HttpPost("login")]
+        [HttpPost("user/login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
         {
             var result = await _userService.LoginAsync(loginDTO);
@@ -75,13 +75,13 @@ namespace SmartCampus_HAU_Backend.Controllers
             return result;
         }
 
-        [HttpPost("forgot-password")]
+        [HttpPost("user/forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] string email)
         {
             return await _userService.SendForgotPasswordEmail(email);
         }
 
-        [HttpPost("reset-password")]
+        [HttpPost("user/reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO resetDTO)
         {
             if (resetDTO == null || string.IsNullOrEmpty(resetDTO.Email) ||
@@ -100,7 +100,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
-        [HttpPut("change-password")]
+        [HttpPut("user/change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changePasswordDTO)
         {
             var userId = HttpContext.Session.GetString("UserId");
@@ -113,7 +113,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             return await _userService.ChangePasswordAsync(userId, changePasswordDTO);
         }
 
-        [HttpPut("update-info")]
+        [HttpPut("user/update-info")]
         public async Task<IActionResult> UpdateUserInfo([FromBody] UpdateUserInfoDTO updateUserInfoDTO)
         {
             var userId = HttpContext.Session.GetString("UserId");
@@ -126,7 +126,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             return await _userService.UpdateUserInfoAsync(userId, updateUserInfoDTO);
         }
 
-        [HttpGet("profile")]
+        [HttpGet("user/profile")]
         public async Task<IActionResult> GetUserProfile()
         {
             var userId = HttpContext.Session.GetString("UserId");
@@ -139,7 +139,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             return await _userService.GetUserInfoAsync(userId);
         }
 
-        [HttpDelete("delete")]
+        [HttpDelete("user/delete")]
         public async Task<IActionResult> DeleteUser([FromQuery] string username)
         {
             if (string.IsNullOrEmpty(username))

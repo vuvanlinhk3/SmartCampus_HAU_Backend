@@ -14,7 +14,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             _roomService = roomService;
         }
 
-        [HttpGet("all")]
+        [HttpGet("room/getall")]
         public async Task<IActionResult> GetAllRoomsWithStatus()
         {
             try
@@ -28,7 +28,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
-        [HttpPost("create")]
+        [HttpPost("room/create")]
         public async Task<IActionResult> CreateRoom([FromBody] CreateRoomDTO createRoomDTO)
         {
             if (createRoomDTO == null)
@@ -47,7 +47,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
-        [HttpGet("{roomName}")]
+        [HttpGet("room/getbyname/{roomName}")]
         public async Task<IActionResult> GetRoomByName(string roomName)
         {
             try
@@ -61,7 +61,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
-        [HttpPut("update/{roomId}")]
+        [HttpPut("room/update/{roomId}")]
         public async Task<IActionResult> UpdateRoom([FromBody] int roomId, RoomDetailDTO roomDetailDTO)
         {
             if (roomId <= 0 || roomDetailDTO == null)
@@ -79,7 +79,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
-        [HttpDelete("delete/{roomId}")]
+        [HttpDelete("room/delete/{roomId}")]
         public async Task<IActionResult> DeleteRoom(int roomId)
         {
             if (roomId <= 0)
