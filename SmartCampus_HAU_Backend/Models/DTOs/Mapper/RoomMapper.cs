@@ -15,5 +15,15 @@ namespace SmartCampus_HAU_Backend.Models.DTOs.Mapper
                 RoomType = room.RoomType
             };
         }
+
+        public static CreateRoomDTO ToCreateRoomDTO(this Room room)
+        {
+            return new CreateRoomDTO
+            {
+                RoomName = room.RoomName,
+                Location = room.Location,
+                RoomType = room.RoomType
+            };
+        }
     }
 }

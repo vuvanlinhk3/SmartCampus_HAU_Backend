@@ -139,11 +139,11 @@ namespace SmartCampus_HAU_Backend.Services
             return $"{startTime:hh\\:mm} - {endTime:hh\\:mm}";
         }
 
-        public async Task<IActionResult> CreateRoomAsync(CreateRoomDTO createRoomDTO)
+        public async Task<CreateRoomDTO> CreateRoomAsync(CreateRoomDTO createRoomDTO)
         {
             if (createRoomDTO == null || string.IsNullOrEmpty(createRoomDTO.RoomName))
             {
-                return new BadRequestObjectResult("Invalid room data.");
+                throw new BadRequestException("Invalid room data.");
             }
             var room = new Room
             {
@@ -153,7 +153,7 @@ namespace SmartCampus_HAU_Backend.Services
             };
             _context.Rooms.Add(room);
             await _context.SaveChangesAsync();
-            return new CreatedAtActionResult(nameof(GetRoomByNameAsync), "Rooms", new { roomId = room.RoomId }, room);
+            return room.ToCreateRoomDTO();
         }
 
         public async Task<RoomDetailDTO> GetRoomByNameAsync(string roomName)
@@ -187,16 +187,16 @@ namespace SmartCampus_HAU_Backend.Services
             return room.ToRoomDetailDTO();
         }
 
-        public async Task<IActionResult> DeleteRoomAsync(int roomId)
+        public async Task<bool> DeleteRoomAsync(int roomId)
         {
             var room = await _context.Rooms.FindAsync(roomId);
             if (room == null)
             {
-                return new NotFoundResult();
+                throw new NotFoundException($"Room with ID {roomId} not found.");
             }
             _context.Rooms.Remove(room);
             await _context.SaveChangesAsync();
-            return new NoContentResult();
+            return true;
         }
     }
 }

@@ -4,8 +4,6 @@ using SmartCampus_HAU_Backend.Models.DTOs.RoomDevices;
 using SmartCampus_HAU_Backend.Models.Entities;
 using SmartCampus_HAU_Backend.Models.DTOs.Mapper;
 using SmartCampus_HAU_Backend.Data;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace SmartCampus_HAU_Backend.Services
@@ -19,10 +17,10 @@ namespace SmartCampus_HAU_Backend.Services
             _context = context;
         }
 
-        public async Task<List<RoomDeviceDTO>> GetAllRoomDevicesAsync(int roomID)
+        public async Task<List<RoomDeviceDTO>> GetAllRoomDevicesAsync(int roomId)
         {
             var roomDevices = await _context.RoomDevices
-                .Where(rd => rd.RoomId == roomID)
+                .Where(rd => rd.RoomId == roomId)
                 .ToListAsync();
 
             return roomDevices.Select(rd => rd.ToRoomDeviceDTO()).ToList();
@@ -38,7 +36,7 @@ namespace SmartCampus_HAU_Backend.Services
             return roomDevice.ToRoomDeviceDTO();
         }
 
-        public async Task<RoomDeviceDTO> CreateRoomDeviceAsync(int roomId, RoomDeviceDTO createRoomDeviceDTO)
+        public async Task<RoomDeviceDTO> AddRoomDeviceAsync(int roomId, RoomDeviceDTO createRoomDeviceDTO)
         {
             var room = await _context.Rooms.FindAsync(roomId);
             if (room == null)
