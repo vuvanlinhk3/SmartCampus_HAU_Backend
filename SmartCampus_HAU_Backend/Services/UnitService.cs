@@ -4,10 +4,11 @@ using SmartCampus_HAU_Backend.Models.Entities;
 using SmartCampus_HAU_Backend.Models.DTOs.Mapper;
 using SmartCampus_HAU_Backend.Data;
 using Microsoft.EntityFrameworkCore;
+using SmartCampus_HAU_Backend.Services.Interfaces;
 
-namespace SmartCampus_HAU_Backend.Services.Interfaces
+namespace SmartCampus_HAU_Backend.Services
 {
-    public class UnitService
+    public class UnitService : IUnitService
     {
         private readonly ApplicationDbContext _context;
         public UnitService(ApplicationDbContext context)

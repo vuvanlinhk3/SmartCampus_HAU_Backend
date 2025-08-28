@@ -37,7 +37,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
             try
             {
-                var result = await _roomService.CreateRoomAsync(createRoomDTO);
+                var result = await _roomService.AddRoomAsync(createRoomDTO);
                 return new OkObjectResult(result);
             }
             catch (Exception ex)

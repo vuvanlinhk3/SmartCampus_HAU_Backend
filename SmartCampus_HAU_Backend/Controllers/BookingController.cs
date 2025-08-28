@@ -1,0 +1,95 @@
+﻿using SmartCampus_HAU_Backend.Services.Interfaces;
+using SmartCampus_HAU_Backend.Models.DTOs.Bookings;
+using Microsoft.AspNetCore.Mvc;
+
+namespace SmartCampus_HAU_Backend.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class BookingController : ControllerBase
+    {
+        private readonly IBookingService _bookingService;
+        public BookingController(IBookingService bookingService)
+        {
+            _bookingService = bookingService;
+        }
+
+        [HttpGet("booking/getall/{roomId}")]
+        public async Task<IActionResult> GetAllBookings(int roomId)
+        {
+            try
+            {
+                var bookings = await _bookingService.GetAllBookingsAsync(roomId);
+                return new OkObjectResult(bookings);
+            }
+            catch (Exception ex)
+            {
+                return new StatusCodeResult(500);
+            }
+        }
+
+        [HttpGet("booking/getbyid/{bookingId}")]
+        public async Task<IActionResult> GetBookingById(int bookingId)
+        {
+            try
+            {
+                var booking = await _bookingService.GetBookingByIdAsync(bookingId);
+                return new OkObjectResult(booking);
+            }
+            catch (Exception ex)
+            {
+                return new StatusCodeResult(500);
+            }
+        }
+
+        [HttpPost("booking/add/{roomId}")]
+        public async Task<IActionResult> AddBooking(int roomId, [FromBody] BookingDTO createBookingDTO)
+        {
+            if (createBookingDTO == null)
+            {
+                return new BadRequestObjectResult("Invalid booking data.");
+            }
+            try
+            {
+                var result = await _bookingService.AddBookingAsync(roomId, createBookingDTO);
+                return new OkObjectResult(result);
+            }
+            catch (Exception ex)
+            {
+                return new StatusCodeResult(500);
+            }
+        }
+
+        [HttpPut("booking/update/{bookingId}")]
+        public async Task<IActionResult> UpdateBooking(int bookingId, [FromBody] BookingDTO bookingDTO)
+        {
+            if (bookingDTO == null)
+            {
+                return new BadRequestObjectResult("Invalid booking data.");
+            }
+            try
+            {
+                var result = await _bookingService.UpdateBookingAsync(bookingId, bookingDTO);
+                return new OkObjectResult(result);
+            }
+            catch (Exception ex)
+            {
+                return new StatusCodeResult(500);
+            }
+        }
+
+        [HttpDelete("booking/delete/{bookingId}")]
+        public async Task<IActionResult> DeleteBooking(int bookingId)
+        {
+            try
+            {
+                await _bookingService.DeleteBookingAsync(bookingId);
+                return new OkResult();
+            }
+            catch (Exception ex)
+            {
+                return new StatusCodeResult(500);
+            }
+        }
+    }
+}

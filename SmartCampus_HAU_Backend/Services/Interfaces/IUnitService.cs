@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SmartCampus_HAU_Backend.Models.DTOs.Units;
+﻿using SmartCampus_HAU_Backend.Models.DTOs.Units;
 
 namespace SmartCampus_HAU_Backend.Services.Interfaces
 {
