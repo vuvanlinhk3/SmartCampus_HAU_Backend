@@ -138,7 +138,7 @@ namespace SmartCampus_HAU_Backend.Services
             return $"{startTime:hh\\:mm} - {endTime:hh\\:mm}";
         }
 
-        public async Task<CreateRoomDTO> AddRoomAsync(CreateRoomDTO createRoomDTO)
+        public async Task<RoomDetailDTO> AddRoomAsync(CreateRoomDTO createRoomDTO)
         {
             if (createRoomDTO == null || string.IsNullOrEmpty(createRoomDTO.RoomName))
             {

@@ -15,7 +15,7 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpGet("room/device/getall/{roomId}")]
-        public async Task<IActionResult> GetAllRoomDevices([FromBody] int roomId)
+        public async Task<IActionResult> GetAllRoomDevices([FromRoute] int roomId)
         {
             try
             {
@@ -29,7 +29,7 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpGet("room/device/get/{roomDeviceId}")]
-        public async Task<IActionResult> GetRoomDevicesById([FromBody] int roomDeviceId)
+        public async Task<IActionResult> GetRoomDevicesById([FromRoute] int roomDeviceId)
         {
             try
             {
@@ -42,8 +42,8 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
-        [HttpPost("room/device/add")]
-        public async Task<IActionResult> AddRoomDevice([FromBody] int roomId, RoomDeviceDTO createRoomDeviceDTO)
+        [HttpPost("room/device/add/{roomId}")]
+        public async Task<IActionResult> AddRoomDevice([FromRoute] int roomId, [FromBody] CreateRoomDeviceDTO createRoomDeviceDTO)
         {
             if (createRoomDeviceDTO == null)
             {
@@ -61,9 +61,9 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpPut("room/device/update/{roomDeviceId}")]
-        public async Task<IActionResult> UpdateRoomDevice([FromBody] int roomDeviceId, RoomDeviceDTO updateRoomDeviceDTO)
+        public async Task<IActionResult> UpdateRoomDevice([FromRoute] int roomDeviceId, [FromBody] UpdateRoomDeviceDTO updateRoomDeviceDTO)
         {
-            if (updateRoomDeviceDTO == null || roomDeviceId != updateRoomDeviceDTO.RoomDeviceId)
+            if (updateRoomDeviceDTO == null)
             {
                 return new BadRequestObjectResult("Invalid device data.");
             }
@@ -79,7 +79,7 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpDelete("room/device/delete/{roomDeviceId}")]
-        public async Task<IActionResult> DeleteRoomDevice([FromBody] int roomDeviceId)
+        public async Task<IActionResult> DeleteRoomDevice([FromRoute] int roomDeviceId)
         {
             try
             {

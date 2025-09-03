@@ -15,7 +15,7 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpGet("booking/getall/{roomId}")]
-        public async Task<IActionResult> GetAllBookings(int roomId)
+        public async Task<IActionResult> GetAllBookings([FromRoute] int roomId)
         {
             try
             {
@@ -29,7 +29,7 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpGet("booking/getbyid/{bookingId}")]
-        public async Task<IActionResult> GetBookingById(int bookingId)
+        public async Task<IActionResult> GetBookingById( [FromRoute] int bookingId)
         {
             try
             {
@@ -43,7 +43,7 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpPost("booking/add/{roomId}")]
-        public async Task<IActionResult> AddBooking(int roomId, [FromBody] BookingDTO createBookingDTO)
+        public async Task<IActionResult> AddBooking([FromRoute] int roomId, [FromBody] BookingDTO createBookingDTO)
         {
             if (createBookingDTO == null)
             {
@@ -61,7 +61,7 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpPut("booking/update/{bookingId}")]
-        public async Task<IActionResult> UpdateBooking(int bookingId, [FromBody] BookingDTO bookingDTO)
+        public async Task<IActionResult> UpdateBooking([FromRoute] int bookingId, [FromBody] BookingDTO bookingDTO)
         {
             if (bookingDTO == null)
             {
@@ -79,7 +79,7 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpDelete("booking/delete/{bookingId}")]
-        public async Task<IActionResult> DeleteBooking(int bookingId)
+        public async Task<IActionResult> DeleteBooking([FromRoute] int bookingId)
         {
             try
             {
