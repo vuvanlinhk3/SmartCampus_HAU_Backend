@@ -218,8 +218,9 @@ namespace SmartCampus_HAU_Backend.Services
             });
         }
 
-        public async Task<ServiceResult> SendForgotPasswordEmailAsync(string email)
+        public async Task<ServiceResult> SendForgotPasswordEmailAsync([FromBody] ForgotPasswordRequest request)
         {
+            var email = request.Email;
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null || !user.EmailConfirmed)
             {

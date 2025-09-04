@@ -16,7 +16,7 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpPost("user/register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
+        public async Task<IActionResult> RegisterNewUser([FromBody] RegisterDTO registerDTO)
         {
             if (registerDTO == null)
             {
@@ -77,8 +77,9 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpPost("user/forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] string email)
+        public async Task<IActionResult> SendForgotPasswordEmail([FromBody] ForgotPasswordRequest request)
         {
+            var email = request.Email;
             if (string.IsNullOrEmpty(email))
             {
                 return BadRequest("Email không được để trống");
@@ -166,7 +167,7 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpGet("user/profile")]
-        public async Task<IActionResult> GetUserProfile()
+        public async Task<IActionResult> GetUserInfo()
         {
             var userId = HttpContext.Session.GetString("UserId");
 
