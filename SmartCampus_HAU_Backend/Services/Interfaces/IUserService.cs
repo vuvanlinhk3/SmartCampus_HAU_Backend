@@ -9,9 +9,10 @@ namespace SmartCampus_HAU_Backend.Services.Interfaces
         Task<IActionResult> LoginAsync(LoginDTO loginDTO); // Đăng nhập
         Task<IActionResult> ConfirmEmailAsync(string userId, string token); // Xác nhận email
         Task<IActionResult> ResendEmailConfirmationAsync(string email); // Gửi lại email xác nhận
-        Task<IActionResult> SendForgotPasswordEmail(string email); // Gửi email quên mật khẩu
-        Task<IActionResult> ResetPasswordAsync(string email, string token, string newPassword); // Đặt lại mật khẩu
-        Task<IActionResult> ChangePasswordAsync(string userId, ChangePasswordDTO changePasswordDTO); // Đổi mật khẩu
+        Task<ServiceResult> SendForgotPasswordEmailAsync(string email); // Gửi email quên mật khẩu
+        Task<ServiceResult<string>> VerifyResetTokenAsync(string email, string token); // Xác minh token đặt lại mật khẩu
+        Task<ServiceResult> ResetPasswordAsync(ResetPasswordDTO resetPasswordDTO); // Đặt lại mật khẩu
+        Task<ServiceResult> ChangePasswordAsync(string userId, ChangePasswordDTO changePasswordDTO); // Đổi mật khẩu
         Task<IActionResult> UpdateUserInfoAsync(string userId, UpdateUserInfoDTO updateUserInfoDTO); // Cập nhật thông tin người dùng
         Task<IActionResult> GetUserInfoAsync(string userId); // Lấy thông tin người dùng
         Task<IActionResult> DeleteUsersAsync(string username); // Xóa người dùng

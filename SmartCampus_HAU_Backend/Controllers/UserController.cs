@@ -1,6 +1,7 @@
 ﻿using SmartCampus_HAU_Backend.Services.Interfaces;
 using SmartCampus_HAU_Backend.Models.DTOs.Users;
 using Microsoft.AspNetCore.Mvc;
+using Azure.Core;
 
 namespace SmartCampus_HAU_Backend.Controllers
 {
@@ -33,9 +34,9 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpGet("user/confirm-email")]
-        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string email, [FromQuery] string token)
         {
-            return await _userService.ConfirmEmailAsync(userId, token);
+            return await _userService.ConfirmEmailAsync(email, token);
         }
 
         [HttpPost("user/resend-confirmation")]
@@ -78,7 +79,32 @@ namespace SmartCampus_HAU_Backend.Controllers
         [HttpPost("user/forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] string email)
         {
-            return await _userService.SendForgotPasswordEmail(email);
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest("Email không được để trống");
+            }
+
+            var result = await _userService.SendForgotPasswordEmailAsync(email);
+
+            if (result.IsSuccess) 
+            {
+                return Ok(new { Message = result.Message });
+            }
+
+            return BadRequest(new { Message = result.Message, Errors = result.Errors });
+        }
+
+        [HttpGet("user/verify-reset-token")]
+        public async Task<IActionResult> VerifyResetToken(string email, string token)
+        {
+            var result = await _userService.VerifyResetTokenAsync(email, token);
+
+            if (result.IsSuccess)
+            {
+                return Redirect(result.Data);
+            }
+
+            return BadRequest(new { Message = result.Message, Errors = result.Errors });
         }
 
         [HttpPost("user/reset-password")]
@@ -92,7 +118,14 @@ namespace SmartCampus_HAU_Backend.Controllers
 
             try
             {
-                return await _userService.ResetPasswordAsync(resetDTO.Email, resetDTO.Token, resetDTO.NewPassword);
+                var result = await _userService.ResetPasswordAsync(resetDTO);
+
+                if (result.IsSuccess)
+                {
+                    return Ok(new { Message = result.Message });
+                }
+
+                return BadRequest(new { Message = result.Message, Errors = result.Errors });
             }
             catch (Exception ex)
             {
@@ -110,7 +143,13 @@ namespace SmartCampus_HAU_Backend.Controllers
                 return Unauthorized("Vui lòng đăng nhập để sử dụng chức năng này");
             }
 
-            return await _userService.ChangePasswordAsync(userId, changePasswordDTO);
+            var result = await _userService.ChangePasswordAsync(userId, changePasswordDTO);
+            if(result.IsSuccess)
+            {
+                return Ok(new { Message = result.Message });
+            }
+
+            return BadRequest(new { Message = result.Message, Errors = result.Errors });
         }
 
         [HttpPut("user/update-info")]

@@ -14,13 +14,15 @@ namespace SmartCampus_HAU_Backend.Services
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
-        public UserService(UserManager<User> userManager, SignInManager<User> signInManager, ApplicationDbContext context, IEmailService emailService)
+        public UserService(UserManager<User> userManager, SignInManager<User> signInManager, ApplicationDbContext context, IEmailService emailService, IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
             _emailService = emailService;
+            _configuration = configuration;
         }
 
         public async Task<IActionResult> RegisterNewUserAsync(RegisterDTO registerDTO)
@@ -76,7 +78,7 @@ namespace SmartCampus_HAU_Backend.Services
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-            var confirmationLink = $"https://localhost:7072/api/User/confirm-email?userId={user.Id}&token={Uri.EscapeDataString(token)}";
+            var confirmationLink = $"https://localhost:7072/api/User/user/confirm-email?email={Uri.EscapeDataString(user.Email!)}&token={Uri.EscapeDataString(token)}";
 
             var emailSubject = "Xác nhận tài khoản SmartCampus HAU";
             var emailBody = $@"
@@ -109,17 +111,20 @@ namespace SmartCampus_HAU_Backend.Services
                     </p>
                 </div>";
 
-            await _emailService.SendEmailAsync(user.Email, emailSubject, emailBody);
+            await _emailService.SendEmailAsync(user.Email!, emailSubject, emailBody);
         }
 
-        public async Task<IActionResult> ConfirmEmailAsync(string userId, string token)
+        public async Task<IActionResult> ConfirmEmailAsync(string email, string token)
         {
-            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
             {
                 return new BadRequestObjectResult("Thông tin xác nhận không hợp lệ");
             }
 
-            var user = await _userManager.FindByIdAsync(userId);
+            email = Uri.UnescapeDataString(email);
+            token = Uri.UnescapeDataString(token);
+
+            var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
                 return new BadRequestObjectResult("Không tìm thấy người dùng");
@@ -213,16 +218,16 @@ namespace SmartCampus_HAU_Backend.Services
             });
         }
 
-        public async Task<IActionResult> SendForgotPasswordEmail(string email)
+        public async Task<ServiceResult> SendForgotPasswordEmailAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null || !user.EmailConfirmed)
             {
-                return new BadRequestObjectResult("Email không tồn tại hoặc chưa xác nhận");
+                return ServiceResult.Failure("Email không tồn tại hoặc chưa xác nhận");
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var resetLink = $"https://localhost:7072/api/User/reset-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
+            var resetLink = $"https://localhost:7072/api/User/user/verify-reset-token?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
 
             var subject = "Đặt lại mật khẩu";
             var body = $@"
@@ -258,52 +263,77 @@ namespace SmartCampus_HAU_Backend.Services
 
             await _emailService.SendEmailAsync(email, subject, body);
 
-            return new OkObjectResult("Email đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra email.");
+            return ServiceResult.Success("Email đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra email.");
         }
 
-        public async Task<IActionResult> ResetPasswordAsync(string email, string token, string newPassword)
+        public async Task<ServiceResult<string>> VerifyResetTokenAsync(string email, string token)
         {
             try
             {
+                email = Uri.UnescapeDataString(email);
+                token = Uri.UnescapeDataString(token);
+
+                if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+                {
+                    return ServiceResult<string>.Failure("Thông tin không hợp lệ");
+                }
+
                 var user = await _userManager.FindByEmailAsync(email);
                 if (user == null)
                 {
-                    return new BadRequestObjectResult("Email không hợp lệ");
+                    return ServiceResult<string>.Failure("Không tìm thấy người dùng");
                 }
 
-                var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
-
-                if (!result.Succeeded)
+                var isvalidToken = await _userManager.VerifyUserTokenAsync(user, _userManager.Options.Tokens.PasswordResetTokenProvider, "ResetPassword", token);
+                if (isvalidToken)
                 {
-                    try
-                    {
-                        var decodedToken = Uri.UnescapeDataString(token);
-                        result = await _userManager.ResetPasswordAsync(user, decodedToken, newPassword);
-                    }
-                    catch (Exception)
-                    {
+                    var frontendUrl = _configuration["Frontend:ResetPasswordUrl"];
+                    var redirectUrl = $"{frontendUrl}?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}&valid=true";
 
-                    }
+                    return ServiceResult<string>.Success(redirectUrl, "Token hợp lệ");
                 }
 
-                if (result.Succeeded)
-                {
-                    return new OkObjectResult("Đặt lại mật khẩu thành công");
-                }
-
-                return new BadRequestObjectResult(new
-                {
-                    Message = "Token không hợp lệ hoặc đã hết hạn",
-                    Errors = result.Errors.Select(e => e.Description)
-                });
+                return ServiceResult<string>.Failure("Token không hợp lệ hoặc đã hết hạn");
             }
             catch (Exception ex)
             {
-                return new ObjectResult($"Lỗi: {ex.Message}") { StatusCode = 500 };
+                return ServiceResult<string>.Failure("Lỗi hệ thống", new List<string> { ex.Message });
             }
         }
 
-        public async Task<IActionResult> ChangePasswordAsync(string userId, ChangePasswordDTO changePasswordDTO)
+        public async Task<ServiceResult> ResetPasswordAsync(ResetPasswordDTO resetPasswordDTO)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(resetPasswordDTO.Email) ||
+                    string.IsNullOrEmpty(resetPasswordDTO.Token) ||
+                    string.IsNullOrEmpty(resetPasswordDTO.NewPassword))
+                {
+                    return ServiceResult.Failure("Thông tin không đầy đủ");
+                }
+
+                var user = await _userManager.FindByEmailAsync(resetPasswordDTO.Email);
+                if (user == null)
+                {
+                    return ServiceResult.Failure("Không tìm thấy người dùng");
+                }
+
+                var result = await _userManager.ResetPasswordAsync(user, resetPasswordDTO.Token, resetPasswordDTO.NewPassword);
+
+                if (result.Succeeded)
+                {
+                    return ServiceResult.Success("Đặt lại mật khẩu thành công");
+                }
+
+                return ServiceResult.Failure("Đặt lại mật khẩu thất bại", result.Errors.Select(e => e.Description).ToList());
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult.Failure("Lỗi hệ thống", new List<string> { ex.Message });
+            }
+        }
+
+        public async Task<ServiceResult> ChangePasswordAsync(string userId, ChangePasswordDTO changePasswordDTO)
         {
             try
             {
@@ -311,23 +341,23 @@ namespace SmartCampus_HAU_Backend.Services
                     string.IsNullOrEmpty(changePasswordDTO.CurrentPassword) ||
                     string.IsNullOrEmpty(changePasswordDTO.NewPassword))
                 {
-                    return new BadRequestObjectResult("Thông tin đổi mật khẩu không hợp lệ");
+                    return ServiceResult.Failure("Thông tin đổi mật khẩu không hợp lệ");
                 }
 
                 if (changePasswordDTO.NewPassword != changePasswordDTO.ConfirmPassword)
                 {
-                    return new BadRequestObjectResult("Mật khẩu mới và xác nhận mật khẩu không khớp");
+                    return ServiceResult.Failure("Mật khẩu mới và xác nhận mật khẩu không khớp");
                 }
 
                 var user = await _userManager.FindByIdAsync(userId);
                 if (user == null)
                 {
-                    return new BadRequestObjectResult("Không tìm thấy người dùng");
+                    return ServiceResult.Failure("Không tìm thấy người dùng");
                 }
 
                 if (!user.EmailConfirmed)
                 {
-                    return new BadRequestObjectResult("Email chưa được xác nhận. Vui lòng xác nhận email trước khi đổi mật khẩu");
+                    return ServiceResult.Failure("Email chưa được xác nhận. Vui lòng xác nhận email trước khi đổi mật khẩu");
                 }
 
                 var result = await _userManager.ChangePasswordAsync(user, changePasswordDTO.CurrentPassword, changePasswordDTO.NewPassword);
@@ -343,29 +373,21 @@ namespace SmartCampus_HAU_Backend.Services
                         Console.WriteLine($"Failed to send password change notification: {ex.Message}");
                     }
 
-                    return new OkObjectResult(new
-                    {
-                        Message = "Đổi mật khẩu thành công",
-                        Timestamp = DateTime.UtcNow
-                    });
+                    return ServiceResult.Success("Đổi mật khẩu thành công");
                 }
 
                 var errors = result.Errors.Select(e => e.Description).ToList();
 
                 if (errors.Any(e => e.Contains("current password") || e.Contains("incorrect")))
                 {
-                    return new BadRequestObjectResult("Mật khẩu hiện tại không chính xác");
+                    return ServiceResult.Failure("Mật khẩu hiện tại không chính xác");
                 }
 
-                return new BadRequestObjectResult(new
-                {
-                    Message = "Đổi mật khẩu thất bại",
-                    Errors = errors
-                });
+                return ServiceResult.Failure("Đổi mật khẩu thất bại", errors);
             }
             catch (Exception ex)
             {
-                return new ObjectResult($"Lỗi hệ thống: {ex.Message}") { StatusCode = 500 };
+                return ServiceResult.Failure("Lỗi hệ thống", new List<string> { ex.Message });
             }
         }
 
