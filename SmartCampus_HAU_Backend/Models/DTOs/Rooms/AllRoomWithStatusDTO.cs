@@ -4,6 +4,7 @@
     {
         public int RoomId { get; set; }
         public string RoomName { get; set; } = null!;
+        public int Location { get; set; }
         public string Status { get; set; } = null!; // "Đang học" hoặc "Trống"
         public string? Subject { get; set; }
         public string? Teacher { get; set; }

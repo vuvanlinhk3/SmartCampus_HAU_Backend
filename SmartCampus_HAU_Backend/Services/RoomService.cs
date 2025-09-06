@@ -50,6 +50,7 @@ namespace SmartCampus_HAU_Backend.Services
                                                {
                                                    room.RoomId,
                                                    room.RoomName,
+                                                   room.Location,
                                                    BookingId = booking != null ? (int?)booking.BookingId : null,
                                                    Subject = booking != null ? booking.Subject : null,
                                                    Teacher = booking != null ? booking.Teacher : null,
@@ -61,7 +62,7 @@ namespace SmartCampus_HAU_Backend.Services
 
                 // Nhóm theo phòng và xử lý logic trạng thái
                 var rooms = roomsWithBookings
-                    .GroupBy(x => new { x.RoomId, x.RoomName })
+                    .GroupBy(x => new { x.RoomId, x.RoomName, x.Location })
                     .Select(g =>
                     {
                         // Tìm booking đang diễn ra hiện tại
@@ -82,6 +83,7 @@ namespace SmartCampus_HAU_Backend.Services
                         {
                             RoomId = g.Key.RoomId,
                             RoomName = g.Key.RoomName,
+                            Location = g.Key.Location,
                             Status = activeBooking != null ? "Đang học" : "Trống",
                             Subject = displayBooking?.Subject,
                             Teacher = displayBooking?.Teacher,
