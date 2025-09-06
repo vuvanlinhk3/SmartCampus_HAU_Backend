@@ -79,15 +79,14 @@ namespace SmartCampus_HAU_Backend.Controllers
         [HttpPost("user/forgot-password")]
         public async Task<IActionResult> SendForgotPasswordEmail([FromBody] ForgotPasswordRequest request)
         {
-            var email = request.Email;
-            if (string.IsNullOrEmpty(email))
+            if (request == null || string.IsNullOrEmpty(request.Email))
             {
                 return BadRequest("Email không được để trống");
             }
 
-            var result = await _userService.SendForgotPasswordEmailAsync(email);
+            var result = await _userService.SendForgotPasswordEmailAsync(request);
 
-            if (result.IsSuccess) 
+            if (result.IsSuccess)
             {
                 return Ok(new { Message = result.Message });
             }
