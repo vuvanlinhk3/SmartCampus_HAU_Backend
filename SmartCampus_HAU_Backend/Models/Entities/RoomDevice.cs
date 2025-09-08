@@ -24,7 +24,7 @@ public partial class RoomDevice
     public int Quantity { get; set; } // Số lượng thiết bị trong phòng
 
     [Column("status")]
-    public bool Status { get; set; } // Trạng thái thiết bị: Hoạt động (true), Hỏng (false)
+    public bool Status { get; set; } = true; // Trạng thái thiết bị: Hoạt động (true), Hỏng (false)
 
     [Column("detail")]
     [StringLength(255)]

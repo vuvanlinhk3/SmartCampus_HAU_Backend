@@ -24,7 +24,7 @@ public partial class Unit
     public string? DeviceCode { get; set; } // Mã thiết bị: S/N, Mã vạch...
 
     [Column("status")]
-    public bool Status { get; set; } // Trạng thái thiết bị: Hoạt động (true), Hỏng (false)
+    public bool Status { get; set; } = true;// Trạng thái thiết bị: Hoạt động (true), Hỏng (false)
 
     [Column("detail")]
     [StringLength(255)]

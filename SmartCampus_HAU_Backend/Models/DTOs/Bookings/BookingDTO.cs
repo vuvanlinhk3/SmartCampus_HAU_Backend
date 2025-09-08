@@ -1,6 +1,4 @@
-﻿using SmartCampus_HAU_Backend.Models.Entities;
-
-namespace SmartCampus_HAU_Backend.Models.DTOs.Bookings
+﻿namespace SmartCampus_HAU_Backend.Models.DTOs.Bookings
 {
     public class BookingDTO
     {

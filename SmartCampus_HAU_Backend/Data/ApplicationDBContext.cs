@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 using SmartCampus_HAU_Backend.Models.Entities;
 
 namespace SmartCampus_HAU_Backend.Data
@@ -18,10 +19,15 @@ namespace SmartCampus_HAU_Backend.Data
         public DbSet<RoomDevice> RoomDevices => Set<RoomDevice>();
         public DbSet<Unit> Units => Set<Unit>();
         public DbSet<Booking> Bookings => Set<Booking>();
+        public DbSet<FloorPlan> FloorPlans => Set<FloorPlan>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<User>()
+                .HasIndex(x => x.UserName)
+                .IsUnique();
 
             modelBuilder.Entity<Room>()
                 .HasIndex(x => x.RoomName)
@@ -35,14 +41,6 @@ namespace SmartCampus_HAU_Backend.Data
 
             modelBuilder.Entity<Booking>()
                 .ToTable(tb => tb.HasCheckConstraint("CK_Bookings_Periods_1_12", "[periods] >= 1 AND [periods] <= 12"));
-
-            modelBuilder.Entity<RoomDevice>()
-                .Property(x => x.Status)
-                .HasDefaultValue(false);
-
-            modelBuilder.Entity<Unit>()
-                .Property(x => x.Status)
-                .HasDefaultValue(false);
 
             modelBuilder.Entity<Booking>()
                 .Property(x => x.CreatedAt)
@@ -62,6 +60,10 @@ namespace SmartCampus_HAU_Backend.Data
                 .HasOne(x => x.Room)
                 .WithMany(r => r.Bookings)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<FloorPlan>()
+                .HasIndex(x => x.FloorNumber)
+                .IsUnique();
         }
     }
 
@@ -69,9 +71,18 @@ namespace SmartCampus_HAU_Backend.Data
     {
         public ApplicationDbContext CreateDbContext(string[] args)
         {
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("appsettings.Development.json", optional: true)
+                .Build();
+
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
-            optionsBuilder.UseSqlServer("Data Source=DESKTOP-59E3KF3\\TEST;Initial Catalog=CampusManager;Integrated Security=True;Trust Server Certificate=True");
+            var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+            optionsBuilder.UseSqlServer(connectionString);
 
             return new ApplicationDbContext(optionsBuilder.Options);
         }
