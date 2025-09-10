@@ -34,11 +34,11 @@ namespace SmartCampus_HAU_Backend.Services
             return booking.ToBookingDTO();
         }
 
-        public async Task<BookingDTO> AddBookingAsync(int roomId, BookingDTO createBookingDTO)
+        public async Task<BookingDTO> AddBookingAsync(CreateBookingDTO createBookingDTO)
         {
             var booking = new Booking
             {
-                RoomId = roomId,
+                RoomId = createBookingDTO.RoomId,
                 ClassName = createBookingDTO.ClassName,
                 Subject = createBookingDTO.Subject,
                 Teacher = createBookingDTO.Teacher,

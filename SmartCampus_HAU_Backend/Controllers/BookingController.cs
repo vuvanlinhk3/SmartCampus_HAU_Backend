@@ -42,8 +42,8 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
-        [HttpPost("booking/add/{roomId}")]
-        public async Task<IActionResult> AddBooking([FromRoute] int roomId, [FromBody] BookingDTO createBookingDTO)
+        [HttpPost("booking/add")]
+        public async Task<IActionResult> AddBooking([FromBody] CreateBookingDTO createBookingDTO)
         {
             if (createBookingDTO == null)
             {
@@ -51,7 +51,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
             try
             {
-                var result = await _bookingService.AddBookingAsync(roomId, createBookingDTO);
+                var result = await _bookingService.AddBookingAsync(createBookingDTO);
                 return new OkObjectResult(result);
             }
             catch (Exception ex)
