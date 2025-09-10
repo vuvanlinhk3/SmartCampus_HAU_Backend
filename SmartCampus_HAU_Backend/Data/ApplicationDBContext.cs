@@ -79,8 +79,8 @@ namespace SmartCampus_HAU_Backend.Data
 
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
-            var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            var connectionString = configuration.GetConnectionString("DefaultSQLConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultSQLConnection' not found.");
 
             optionsBuilder.UseSqlServer(connectionString);
 
