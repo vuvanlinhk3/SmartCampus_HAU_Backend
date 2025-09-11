@@ -36,6 +36,12 @@ namespace SmartCampus_HAU_Backend.Services
 
         public async Task<BookingDTO> AddBookingAsync(CreateBookingDTO createBookingDTO)
         {
+            if (createBookingDTO.StartPeriod < 1 || createBookingDTO.StartPeriod > 18)
+                throw new BadRequestException("StartPeriod phải từ 1-18");
+
+            if (createBookingDTO.Periods < 1 || createBookingDTO.StartPeriod + createBookingDTO.Periods - 1 > 18)
+                throw new BadRequestException("Periods không hợp lệ hoặc vượt quá tiết 18");
+
             var booking = new Booking
             {
                 RoomId = createBookingDTO.RoomId,
@@ -43,7 +49,7 @@ namespace SmartCampus_HAU_Backend.Services
                 Subject = createBookingDTO.Subject,
                 Teacher = createBookingDTO.Teacher,
                 RegisteredBy = createBookingDTO.RegisteredBy,
-                BookingDate = createBookingDTO.BookingDate,
+                BookingDate = createBookingDTO.BookingDate.ToLocalTime().Date,
                 StartPeriod = createBookingDTO.StartPeriod,
                 Periods = createBookingDTO.Periods,
                 CreatedAt = DateTime.Now

@@ -14,9 +14,11 @@ namespace SmartCampus_HAU_Backend.Models.DTOs.Mapper
                 RoomId = booking.RoomId,
                 Subject = booking.Subject,
                 Teacher = booking.Teacher,
+                RegisteredBy = booking.RegisteredBy,
+                BookingDate = booking.BookingDate,
                 StartPeriod = booking.StartPeriod,
                 Periods = booking.Periods,
-                BookingDate = booking.BookingDate
+                CreatedAt = booking.CreatedAt
             };
         }
     }

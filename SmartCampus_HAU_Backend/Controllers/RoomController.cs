@@ -1,6 +1,8 @@
 ﻿using SmartCampus_HAU_Backend.Services.Interfaces;
 using SmartCampus_HAU_Backend.Models.DTOs.Rooms;
 using Microsoft.AspNetCore.Mvc;
+using SmartCampus_HAU_Backend.Exceptions.CustomExceptions;
+using SmartCampus_HAU_Backend.Services;
 
 namespace SmartCampus_HAU_Backend.Controllers
 {
@@ -25,6 +27,38 @@ namespace SmartCampus_HAU_Backend.Controllers
             catch (Exception ex)
             {
                 return new StatusCodeResult(500);
+            }
+        }
+
+        [HttpGet("room/{roomId}/devices")]
+        public async Task<IActionResult> GetAllDevicesInRoom(int roomId)
+        {
+            try
+            {
+                var devices = await _roomService.GetAllDevicesInRoomAsync(roomId);
+                return Ok(devices);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi hệ thống", details = ex.Message });
+            }
+        }
+
+        [HttpGet("all-rooms/devices")]
+        public async Task<IActionResult> GetAllDevicesAllRooms()
+        {
+            try
+            {
+                var devicesAllRooms = await _roomService.GetAllDevicesAllRoomsAsync();
+                return Ok(devicesAllRooms);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi hệ thống", details = ex.Message });
             }
         }
 

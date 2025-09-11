@@ -30,7 +30,13 @@ namespace SmartCampus_HAU_Backend.Services
             { 9, (new TimeSpan(13, 45, 0), new TimeSpan(14, 30, 0)) },
             { 10, (new TimeSpan(14, 40, 0), new TimeSpan(15, 25, 0)) },
             { 11, (new TimeSpan(15, 30, 0), new TimeSpan(16, 15, 0)) },
-            { 12, (new TimeSpan(16, 20, 0), new TimeSpan(17, 5, 0)) }
+            { 12, (new TimeSpan(16, 20, 0), new TimeSpan(17, 5, 0)) },
+            { 13, (new TimeSpan(17, 10, 0), new TimeSpan(17, 55, 0)) },
+            { 14, (new TimeSpan(18, 0, 0),  new TimeSpan(18, 45, 0)) },
+            { 15, (new TimeSpan(18, 50, 0), new TimeSpan(19, 35, 0)) },
+            { 16, (new TimeSpan(19, 40, 0), new TimeSpan(20, 25, 0)) },
+            { 17, (new TimeSpan(20, 30, 0), new TimeSpan(21, 15, 0)) },
+            { 18, (new TimeSpan(21, 20, 0), new TimeSpan(22, 5, 0)) }
         };
 
         public async Task<List<AllRoomWithStatusDTO>> GetAllRoomsWithStatus()
@@ -38,19 +44,22 @@ namespace SmartCampus_HAU_Backend.Services
             try
             {
                 var currentDate = DateTime.Today;
+                var nextDate = currentDate.AddDays(1);
                 var currentTime = DateTime.Now.TimeOfDay;
 
                 // Lấy tất cả phòng và booking trong ngày hiện tại
                 var roomsWithBookings = await (from room in _context.Rooms
                                                from booking in _context.Bookings
                                                    .Where(b => b.RoomId == room.RoomId &&
-                                                              b.BookingDate.Date == currentDate)
+                                                               b.BookingDate >= currentDate &&
+                                                               b.BookingDate < nextDate)
                                                    .DefaultIfEmpty()
                                                select new
                                                {
                                                    room.RoomId,
                                                    room.RoomName,
                                                    room.Location,
+                                                   room.RoomType,
                                                    BookingId = booking != null ? (int?)booking.BookingId : null,
                                                    Subject = booking != null ? booking.Subject : null,
                                                    Teacher = booking != null ? booking.Teacher : null,
@@ -62,7 +71,7 @@ namespace SmartCampus_HAU_Backend.Services
 
                 // Nhóm theo phòng và xử lý logic trạng thái
                 var rooms = roomsWithBookings
-                    .GroupBy(x => new { x.RoomId, x.RoomName, x.Location })
+                    .GroupBy(x => new { x.RoomId, x.RoomName, x.Location, x.RoomType })
                     .Select(g =>
                     {
                         // Tìm booking đang diễn ra hiện tại
@@ -84,6 +93,7 @@ namespace SmartCampus_HAU_Backend.Services
                             RoomId = g.Key.RoomId,
                             RoomName = g.Key.RoomName,
                             Location = g.Key.Location,
+                            RoomType = g.Key.RoomType,
                             Status = activeBooking != null ? "Đang học" : "Trống",
                             Subject = displayBooking?.Subject,
                             Teacher = displayBooking?.Teacher,
@@ -98,6 +108,7 @@ namespace SmartCampus_HAU_Backend.Services
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 throw new InvalidOperationException($"Lỗi hệ thống: {ex.Message}", ex);
             }
         }
@@ -137,7 +148,71 @@ namespace SmartCampus_HAU_Backend.Services
 
             var endTime = _periodTimes[endPeriod].End;
 
-            return $"{startTime:hh\\:mm} - {endTime:hh\\:mm}";
+            return $"{startTime.Hours:00}:{startTime.Minutes:00} - {endTime.Hours:00}:{endTime.Minutes:00}";
+        }
+
+        public async Task<RoomDeviceListDTO> GetAllDevicesInRoomAsync(int roomId)
+        {
+            var room = await _context.Rooms
+                .Where(r => r.RoomId == roomId)
+                .Select(r => new { r.RoomId, r.RoomName })
+                .FirstOrDefaultAsync();
+
+            if (room == null)
+            {
+                throw new NotFoundException($"Room with ID {roomId} not found.");
+            }
+
+            var roomDevices = await _context.RoomDevices
+                .Where(rd => rd.RoomId == roomId)
+                .Select(rd => new DeviceItemDTO
+                {
+                    DeviceItemId = rd.RoomDeviceId,
+                    DeviceType = rd.DeviceType,
+                    Status = rd.Status,
+                    Detail = rd.Detail,
+                    Quantity = rd.Quantity,
+                    Category = "RoomDevice"
+                })
+                .ToListAsync();
+
+            var units = await _context.Units
+                .Where(u => u.RoomId == roomId)
+                .Select(u => new DeviceItemDTO
+                {
+                    DeviceItemId = u.UnitId,
+                    DeviceType = u.DeviceType,
+                    Status = u.Status,
+                    Detail = u.Detail,
+                    Quantity = null, 
+                    Category = "Unit"
+                })
+                .ToListAsync();
+
+            return new RoomDeviceListDTO
+            {
+                RoomId = room.RoomId,
+                RoomName = room.RoomName,
+                RoomDevices = roomDevices,
+                Units = units
+            };
+        }
+
+        public async Task<List<RoomDeviceListDTO>> GetAllDevicesAllRoomsAsync()
+        {
+            var rooms = await _context.Rooms
+                .Select(r => new { r.RoomId, r.RoomName })
+                .ToListAsync();
+
+            var result = new List<RoomDeviceListDTO>();
+
+            foreach (var room in rooms)
+            {
+                var roomDevices = await GetAllDevicesInRoomAsync(room.RoomId);
+                result.Add(roomDevices);
+            }
+
+            return result;
         }
 
         public async Task<RoomDetailDTO> AddRoomAsync(CreateRoomDTO createRoomDTO)

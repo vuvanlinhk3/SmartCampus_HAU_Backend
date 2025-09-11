@@ -10,6 +10,5 @@
         public DateTime BookingDate { get; set; }
         public int? StartPeriod { get; set; }
         public int? Periods { get; set; }
-        public DateTime CreatedAt { get; set; }
     }
 }
