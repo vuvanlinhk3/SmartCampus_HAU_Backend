@@ -30,24 +30,6 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
-        [HttpGet("room/{roomId}/devices")]
-        public async Task<IActionResult> GetAllDevicesInRoom(int roomId)
-        {
-            try
-            {
-                var devices = await _roomService.GetAllDevicesInRoomAsync(roomId);
-                return Ok(devices);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Lỗi hệ thống", details = ex.Message });
-            }
-        }
-
         [HttpGet("all-rooms/devices")]
         public async Task<IActionResult> GetAllDevicesAllRooms()
         {
