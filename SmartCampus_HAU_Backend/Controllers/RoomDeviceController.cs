@@ -42,7 +42,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
-        [HttpPost("room/device/add/{roomId}")]
+        [HttpPost("room/device/add")]
         public async Task<IActionResult> AddRoomDevice([FromBody] CreateRoomDeviceDTO createRoomDeviceDTO)
         {
             if (createRoomDeviceDTO == null)
