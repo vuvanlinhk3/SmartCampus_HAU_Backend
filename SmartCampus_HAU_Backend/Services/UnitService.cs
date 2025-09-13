@@ -35,11 +35,11 @@ namespace SmartCampus_HAU_Backend.Services
             return unit.ToUnitDTO();
         }
 
-        public async Task<UnitDTO> AddUnitAsync(int roomId, UnitDTO createUnitDTO)
+        public async Task<UnitDTO> AddUnitAsync(CreateUnitDTO createUnitDTO)
         {
             var unit = new Unit
             {
-                RoomId = roomId,
+                RoomId = createUnitDTO.RoomId,
                 DeviceType = createUnitDTO.DeviceType,
                 DeviceCode = createUnitDTO.DeviceCode,
                 Status = createUnitDTO.Status,

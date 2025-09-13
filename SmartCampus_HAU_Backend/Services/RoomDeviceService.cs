@@ -36,16 +36,16 @@ namespace SmartCampus_HAU_Backend.Services
             return roomDevice.ToRoomDeviceDTO();
         }
 
-        public async Task<RoomDeviceDTO> AddRoomDeviceAsync(int roomId, CreateRoomDeviceDTO createRoomDeviceDTO)
+        public async Task<RoomDeviceDTO> AddRoomDeviceAsync(CreateRoomDeviceDTO createRoomDeviceDTO)
         {
-            var room = await _context.Rooms.FindAsync(roomId);
+            var room = await _context.Rooms.FindAsync(createRoomDeviceDTO.RoomId);
             if (room == null)
             {
-                throw new NotFoundException($"Room with ID {roomId} not found.");
+                throw new NotFoundException($"Room with ID {createRoomDeviceDTO.RoomId} not found.");
             }
             var roomDevice = new RoomDevice
             {
-                RoomId = roomId,
+                RoomId = createRoomDeviceDTO.RoomId,
                 DeviceType = createRoomDeviceDTO.DeviceType,
                 Quantity = createRoomDeviceDTO.Quantity,
                 Status = createRoomDeviceDTO.Status,

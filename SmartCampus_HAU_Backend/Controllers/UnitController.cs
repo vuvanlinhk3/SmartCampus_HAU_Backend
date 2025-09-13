@@ -43,7 +43,7 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpPost("room/unit/add")]
-        public async Task<IActionResult> AddUnit([FromRoute] int roomId, [FromBody] UnitDTO createUnitDTO)
+        public async Task<IActionResult> AddUnit([FromBody] CreateUnitDTO createUnitDTO)
         {
             if (createUnitDTO == null)
             {
@@ -51,7 +51,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
             try
             {
-                var result = await _unitService.AddUnitAsync(roomId, createUnitDTO);
+                var result = await _unitService.AddUnitAsync(createUnitDTO);
                 return new OkObjectResult(result);
             }
             catch (Exception ex)

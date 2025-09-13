@@ -43,7 +43,7 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpPost("room/device/add/{roomId}")]
-        public async Task<IActionResult> AddRoomDevice([FromRoute] int roomId, [FromBody] CreateRoomDeviceDTO createRoomDeviceDTO)
+        public async Task<IActionResult> AddRoomDevice([FromBody] CreateRoomDeviceDTO createRoomDeviceDTO)
         {
             if (createRoomDeviceDTO == null)
             {
@@ -51,7 +51,7 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
             try
             {
-                var result = await _roomDeviceService.AddRoomDeviceAsync(roomId, createRoomDeviceDTO);
+                var result = await _roomDeviceService.AddRoomDeviceAsync(createRoomDeviceDTO);
                 return new OkObjectResult(result);
             }
             catch (Exception ex)
