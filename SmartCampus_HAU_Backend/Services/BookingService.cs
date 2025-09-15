@@ -24,6 +24,19 @@ namespace SmartCampus_HAU_Backend.Services
             return bookings.Select(b => b.ToBookingDTO()).ToList();
         }
 
+        public async Task<List<AllBookingDTO>> GetAllBookingsForStatisticAsync()
+        {
+            var bookings = await _context.Bookings
+                .Include(b => b.Room)
+                .ToListAsync();
+            return bookings.Select(b => new AllBookingDTO
+            {
+                BookingId = b.BookingId,
+                RoomId = b.Room.RoomId,
+                BookingDate = b.BookingDate
+            }).ToList();
+        }
+
         public async Task<BookingDTO> GetBookingByIdAsync(int bookingId)
         {
             var booking = await _context.Bookings.FindAsync(bookingId);

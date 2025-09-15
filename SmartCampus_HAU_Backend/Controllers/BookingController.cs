@@ -28,6 +28,20 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
+        [HttpGet("booking/getallforstatistic")]
+        public async Task<IActionResult> GetAllBookingsForStatistic()
+        {
+            try
+            {
+                var bookings = await _bookingService.GetAllBookingsForStatisticAsync();
+                return new OkObjectResult(bookings);
+            }
+            catch (Exception ex)
+            {
+                return new StatusCodeResult(500);
+            }
+        }
+
         [HttpGet("booking/getbyid/{bookingId}")]
         public async Task<IActionResult> GetBookingById( [FromRoute] int bookingId)
         {
