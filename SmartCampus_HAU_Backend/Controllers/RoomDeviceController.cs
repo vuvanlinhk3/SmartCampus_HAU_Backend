@@ -1,11 +1,13 @@
 ﻿using SmartCampus_HAU_Backend.Services.Interfaces;
 using SmartCampus_HAU_Backend.Models.DTOs.RoomDevices;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SmartCampus_HAU_Backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class RoomDeviceController : ControllerBase
     {
         private readonly IRoomDeviceService _roomDeviceService;

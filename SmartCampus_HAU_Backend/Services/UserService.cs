@@ -168,56 +168,6 @@ namespace SmartCampus_HAU_Backend.Services
             }
         }
 
-        public async Task<IActionResult> LoginAsync(LoginDTO loginDTO)
-        {
-            if (loginDTO == null || string.IsNullOrEmpty(loginDTO.UserName) ||
-                string.IsNullOrEmpty(loginDTO.Password))
-            {
-                return new BadRequestObjectResult("Thông tin đăng nhập không hợp lệ");
-            }
-
-            // Tìm user theo username hoặc email
-            var user = await _userManager.FindByNameAsync(loginDTO.UserName) ??
-                       await _userManager.FindByEmailAsync(loginDTO.UserName);
-
-            if (user == null)
-            {
-                return new UnauthorizedObjectResult("Tên đăng nhập hoặc mật khẩu không chính xác");
-            }
-
-            if (!user.EmailConfirmed)
-            {
-                return new UnauthorizedObjectResult(new
-                {
-                    Message = "Email chưa được xác nhận. Vui lòng kiểm tra email để xác nhận tài khoản.",
-                    Email = user.Email
-                });
-            }
-
-            var result = await _signInManager.CheckPasswordSignInAsync(user, loginDTO.Password, false);
-
-            if (!result.Succeeded)
-            {
-                if (result.IsLockedOut)
-                {
-                    return new UnauthorizedObjectResult("Tài khoản đã bị khóa do nhập sai mật khẩu quá nhiều lần");
-                }
-
-                if (result.RequiresTwoFactor)
-                {
-                    return new UnauthorizedObjectResult("Yêu cầu xác thực hai yếu tố");
-                }
-
-                return new UnauthorizedObjectResult("Tên đăng nhập hoặc mật khẩu không chính xác");
-            }
-
-            return new OkObjectResult(new
-            {
-                Message = "Đăng nhập thành công",
-                UserId = user.Id
-            });
-        }
-
         public async Task<ServiceResult> SendForgotPasswordEmailAsync([FromBody] ForgotPasswordRequest request)
         {
             var email = request.Email;

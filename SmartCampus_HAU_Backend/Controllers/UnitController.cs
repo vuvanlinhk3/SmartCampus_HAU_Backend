@@ -1,11 +1,13 @@
 ﻿using SmartCampus_HAU_Backend.Services.Interfaces;
 using SmartCampus_HAU_Backend.Models.DTOs.Units;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SmartCampus_HAU_Backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UnitController
     {
         private readonly IUnitService _unitService;

@@ -3,11 +3,13 @@ using SmartCampus_HAU_Backend.Models.DTOs.Rooms;
 using Microsoft.AspNetCore.Mvc;
 using SmartCampus_HAU_Backend.Exceptions.CustomExceptions;
 using SmartCampus_HAU_Backend.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SmartCampus_HAU_Backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class RoomController : ControllerBase
     {
         private readonly IRoomService _roomService;
@@ -17,6 +19,7 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpGet("room/getall")]
+
         public async Task<IActionResult> GetAllRoomsWithStatus()
         {
             try

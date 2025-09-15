@@ -6,7 +6,6 @@ namespace SmartCampus_HAU_Backend.Services.Interfaces
     public interface IUserService
     {
         Task<IActionResult> RegisterNewUserAsync(RegisterDTO registerDTO); // Đăng ký người dùng mới
-        Task<IActionResult> LoginAsync(LoginDTO loginDTO); // Đăng nhập
         Task<IActionResult> ConfirmEmailAsync(string userId, string token); // Xác nhận email
         Task<IActionResult> ResendEmailConfirmationAsync(string email); // Gửi lại email xác nhận
         Task<ServiceResult> SendForgotPasswordEmailAsync(ForgotPasswordRequest forgotPasswordRequest); // Gửi email quên mật khẩu

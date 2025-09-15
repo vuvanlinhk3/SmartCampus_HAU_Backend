@@ -1,7 +1,8 @@
 ﻿using SmartCampus_HAU_Backend.Services.Interfaces;
 using SmartCampus_HAU_Backend.Models.DTOs.Users;
 using Microsoft.AspNetCore.Mvc;
-using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace SmartCampus_HAU_Backend.Controllers
 {
@@ -43,37 +44,6 @@ namespace SmartCampus_HAU_Backend.Controllers
         public async Task<IActionResult> ResendConfirmation([FromBody] string email)
         {
             return await _userService.ResendEmailConfirmationAsync(email);
-        }
-
-        [HttpPost("user/login")]
-        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
-        {
-            var result = await _userService.LoginAsync(loginDTO);
-
-            if (result is OkObjectResult okResult && okResult.Value != null)
-            {
-                try
-                {
-                    var resultValue = okResult.Value;
-                    var resultType = resultValue.GetType();
-
-                    var userIdProperty = resultType.GetProperty("UserId");
-                    if (userIdProperty != null)
-                    {
-                        var userId = userIdProperty.GetValue(resultValue)?.ToString();
-                        if (!string.IsNullOrEmpty(userId))
-                        {
-                            HttpContext.Session.SetString("UserId", userId);
-                            HttpContext.Session.SetString("UserName", loginDTO.UserName);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Failed to save session: {ex.Message}");
-                }
-            }
-            return result;
         }
 
         [HttpPost("user/forgot-password")]
@@ -134,9 +104,14 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpPut("user/change-password")]
+        [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changePasswordDTO)
         {
-            var userId = HttpContext.Session.GetString("UserId");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Token không hợp lệ hoặc đã hết hạn");
+            }
 
             if (string.IsNullOrEmpty(userId))
             {
@@ -153,9 +128,14 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpPut("user/update-info")]
+        [Authorize]
         public async Task<IActionResult> UpdateUserInfo([FromBody] UpdateUserInfoDTO updateUserInfoDTO)
         {
-            var userId = HttpContext.Session.GetString("UserId");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Token không hợp lệ hoặc đã hết hạn");
+            }
 
             if (string.IsNullOrEmpty(userId))
             {
@@ -166,9 +146,14 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpGet("user/profile")]
+        [Authorize]
         public async Task<IActionResult> GetUserInfo()
         {
-            var userId = HttpContext.Session.GetString("UserId");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Token không hợp lệ hoặc đã hết hạn");
+            }
 
             if (string.IsNullOrEmpty(userId))
             {

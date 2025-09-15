@@ -20,6 +20,7 @@ namespace SmartCampus_HAU_Backend.Data
         public DbSet<Unit> Units => Set<Unit>();
         public DbSet<Booking> Bookings => Set<Booking>();
         public DbSet<FloorPlan> FloorPlans => Set<FloorPlan>();
+        public DbSet<UserRefreshToken> UserRefreshTokens => Set<UserRefreshToken>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -63,6 +64,14 @@ namespace SmartCampus_HAU_Backend.Data
 
             modelBuilder.Entity<FloorPlan>()
                 .HasIndex(x => x.FloorNumber)
+                .IsUnique();
+
+            modelBuilder.Entity<UserRefreshToken>()
+                .Property(x => x.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder.Entity<UserRefreshToken>()
+                .HasIndex(x => x.Token)
                 .IsUnique();
         }
     }
