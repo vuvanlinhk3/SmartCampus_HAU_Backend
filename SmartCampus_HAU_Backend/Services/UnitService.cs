@@ -50,18 +50,47 @@ namespace SmartCampus_HAU_Backend.Services
             return unit.ToUnitDTO();
         }
 
-        public async Task<UnitDTO> UpdateUnitAsync(int unitId, UnitDTO unitDTO)
+        public async Task<UnitDTO> UpdateUnitAsync(int unitId, UpdateUnitDTO updateUnitDTO)
         {
             var unit = await _context.Units.FindAsync(unitId);
             if (unit == null)
             {
                 throw new NotFoundException($"Unit with ID {unitId} not found.");
             }
-            unit.DeviceType = unitDTO.DeviceType;
-            unit.DeviceCode = unitDTO.DeviceCode;
-            unit.Status = unitDTO.Status;
-            unit.Detail = unitDTO.Detail;
+
+            unit.DeviceType = updateUnitDTO.DeviceType;
+            unit.DeviceCode = updateUnitDTO.DeviceCode;
+            unit.Status = updateUnitDTO.Status;
+            unit.Detail = updateUnitDTO.Detail;
             await _context.SaveChangesAsync();
+            return unit.ToUnitDTO();
+        }
+
+        public async Task<UnitDTO> UpdateUnitStatusAsync(int unitId, bool newStatus, string? notes = null)
+        {
+            var unit = await _context.Units.FindAsync(unitId);
+            var oldStatus = unit!.Status;
+            if (unit == null)
+            {
+                throw new NotFoundException($"Unit with ID {unitId} not found.");
+            }
+            if (oldStatus != newStatus)
+            {
+                var history = new UnitStatusHistory
+                {
+                    UnitId = unitId,
+                    DeviceType = unit.DeviceType,
+                    OldStatus = oldStatus,
+                    NewStatus = newStatus,
+                    ChangedAt = DateTime.UtcNow,
+                    RoomId = unit.RoomId,
+                    Notes = notes
+                };
+
+                _context.UnitStatusHistories.Add(history);
+                unit.Status = newStatus;
+                await _context.SaveChangesAsync();
+            }
             return unit.ToUnitDTO();
         }
 

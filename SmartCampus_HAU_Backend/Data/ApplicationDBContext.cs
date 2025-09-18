@@ -21,6 +21,8 @@ namespace SmartCampus_HAU_Backend.Data
         public DbSet<Booking> Bookings => Set<Booking>();
         public DbSet<FloorPlan> FloorPlans => Set<FloorPlan>();
         public DbSet<UserRefreshToken> UserRefreshTokens => Set<UserRefreshToken>();
+        public DbSet<UnitStatusHistory> UnitStatusHistories => Set<UnitStatusHistory>();
+        public DbSet<RoomDeviceStatusHistory> RoomDeviceStatusHistories => Set<RoomDeviceStatusHistory>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -73,6 +75,42 @@ namespace SmartCampus_HAU_Backend.Data
             modelBuilder.Entity<UserRefreshToken>()
                 .HasIndex(x => x.Token)
                 .IsUnique();
+
+            modelBuilder.Entity<UnitStatusHistory>(entity =>
+            {
+                entity.Property(e => e.ChangedAt)
+                      .HasDefaultValueSql("GETDATE()");
+
+                entity.HasIndex(e => new { e.UnitId, e.ChangedAt });
+
+                entity.HasOne(e => e.Unit)
+                      .WithMany()
+                      .HasForeignKey(e => e.UnitId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Room)
+                      .WithMany()
+                      .HasForeignKey(e => e.RoomId)
+                      .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<RoomDeviceStatusHistory>(entity =>
+            {
+                entity.Property(e => e.ChangedAt)
+                      .HasDefaultValueSql("GETDATE()");
+
+                entity.HasIndex(e => new { e.RoomDeviceId, e.ChangedAt });
+
+                entity.HasOne(e => e.RoomDevice)
+                      .WithMany()
+                      .HasForeignKey(e => e.RoomDeviceId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Room)
+                      .WithMany()
+                      .HasForeignKey(e => e.RoomId)
+                      .OnDelete(DeleteBehavior.NoAction);
+            });
         }
     }
 

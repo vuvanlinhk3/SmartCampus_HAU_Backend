@@ -8,7 +8,7 @@ namespace SmartCampus_HAU_Backend.Services.Interfaces
         Task<List<AllBookingDTO>> GetAllBookingsForStatisticAsync(); // Lấy tất cả đặt phòng cho admin
         Task<BookingDTO> AddBookingAsync(CreateBookingDTO createBookingDTO); // Tạo mới đặt phòng
         Task<BookingDTO> GetBookingByIdAsync(int bookingId); // Lấy đặt phòng theo ID
-        Task<BookingDTO> UpdateBookingAsync(int bookingId, BookingDTO bookingDTO); // Cập nhật đặt phòng
+        Task<BookingDTO> UpdateBookingAsync(int bookingId, UpdateBookingDTO updateBookingDTO); // Cập nhật đặt phòng
         Task<bool> DeleteBookingAsync(int bookingId); // Xóa đặt phòng
     }
 }

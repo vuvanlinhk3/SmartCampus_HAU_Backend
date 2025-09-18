@@ -132,6 +132,8 @@ builder.Services.AddScoped<IRoomDeviceService, RoomDeviceService>();
 builder.Services.AddScoped<IUnitService, UnitService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUnitStatisticsService, UnitStatisticsService>();
+builder.Services.AddScoped<IRoomDeviceStatisticsService, RoomDeviceStatisticsService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection")));

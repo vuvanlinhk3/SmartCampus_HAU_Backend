@@ -80,6 +80,20 @@ namespace SmartCampus_HAU_Backend.Controllers
             }
         }
 
+        [HttpPut("room/device/toggle/{roomDeviceId}")]
+        public async Task<IActionResult> UpdateRoomDeviceStatus([FromRoute] int roomDeviceId, [FromQuery] int quantity, [FromQuery] bool status, [FromQuery] string? notes = null)
+        {
+            try
+            {
+                var result = await _roomDeviceService.UpdateRoomDeviceStatusAsync(roomDeviceId, quantity, status, notes);
+                return new OkObjectResult(result);
+            }
+            catch (Exception ex)
+            {
+                return new StatusCodeResult(500);
+            }
+        }
+
         [HttpDelete("room/device/delete/{roomDeviceId}")]
         public async Task<IActionResult> DeleteRoomDevice([FromRoute] int roomDeviceId)
         {

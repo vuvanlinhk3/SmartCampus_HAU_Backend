@@ -63,11 +63,81 @@ namespace SmartCampus_HAU_Backend.Services
             {
                 throw new NotFoundException($"Room device with ID {roomDeviceId} not found.");
             }
+
             roomDevice.DeviceType = updateRoomDeviceDTO.DeviceType;
             roomDevice.Quantity = updateRoomDeviceDTO.Quantity;
             roomDevice.Status = updateRoomDeviceDTO.Status;
             roomDevice.Detail = updateRoomDeviceDTO.Detail;
+
             _context.RoomDevices.Update(roomDevice);
+            await _context.SaveChangesAsync();
+            return roomDevice.ToRoomDeviceDTO();
+        }
+
+        public async Task<RoomDeviceDTO> UpdateRoomDeviceStatusAsync(int roomDeviceId, int quantity, bool newStatus, string? notes = null)
+        {
+            var roomDevice = await _context.RoomDevices.FindAsync(roomDeviceId);
+            var roomDeviceChanged = await _context.RoomDevices
+                .Where(rdc => rdc.RoomId == roomDevice!.RoomId && rdc.DeviceType == roomDevice.DeviceType && rdc.Status == false)
+                .FirstOrDefaultAsync();
+            var oldStatus = roomDevice!.Status;
+            if (roomDevice == null)
+            {
+                throw new NotFoundException($"Room device with ID {roomDeviceId} not found.");
+            }
+            if (newStatus != oldStatus)
+            {
+                var history = new RoomDeviceStatusHistory
+                {
+                    RoomDeviceId = roomDeviceId,
+                    DeviceType = roomDevice.DeviceType,
+                    OldStatus = oldStatus,
+                    NewStatus = newStatus,
+                    ChangedAt = DateTime.UtcNow,
+                    RoomId = roomDevice.RoomId,
+                    QuantityAffected = quantity,
+                    Notes = notes
+                };
+                _context.RoomDeviceStatusHistories.Add(history);
+
+                if (newStatus == false)
+                {
+                    if (roomDeviceChanged != null)
+                    {
+                        roomDeviceChanged.Quantity += quantity;
+                        roomDevice.Quantity -= quantity;
+                        await _context.SaveChangesAsync();
+                        return roomDevice.ToRoomDeviceDTO();
+                    }
+                    else
+                    {
+                        roomDeviceChanged = new RoomDevice
+                        {
+                            RoomId = roomDevice.RoomId,
+                            DeviceType = roomDevice.DeviceType,
+                            Quantity = quantity,
+                            Status = newStatus,
+                            Detail = roomDevice.Detail
+                        };
+                        _context.RoomDevices.Add(roomDeviceChanged);
+                    }
+                }
+                else
+                {
+                    if (roomDeviceChanged != null)
+                    {
+                        roomDeviceChanged.Quantity -= quantity;
+                        roomDevice.Quantity += quantity;
+                        await _context.SaveChangesAsync();
+                        return roomDevice.ToRoomDeviceDTO();
+                    }
+                    else
+                    {
+                        throw new BadRequestException($"No available broken device to fix for Room ID {roomDevice.RoomId} and Device Type {roomDevice.DeviceType}.");
+                    }
+                }
+            }
+
             await _context.SaveChangesAsync();
             return roomDevice.ToRoomDeviceDTO();
         }

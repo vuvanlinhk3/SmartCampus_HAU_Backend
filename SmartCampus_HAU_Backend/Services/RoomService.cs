@@ -247,7 +247,7 @@ namespace SmartCampus_HAU_Backend.Services
             return room.First().ToRoomDetailDTO();
         }
 
-        public async Task<RoomDetailDTO> UpdateRoomAsync(int roomId, RoomDetailDTO roomDetailDTO)
+        public async Task<RoomDetailDTO> UpdateRoomAsync(int roomId, UpdateRoomDetailDTO updateRoomDetailDTO)
         {
             var room = await _context.Rooms.FindAsync(roomId);
             if (room == null)
@@ -255,9 +255,9 @@ namespace SmartCampus_HAU_Backend.Services
                 throw new NotFoundException($"Room with ID {roomId} not found.");
             }
 
-            room.RoomName = roomDetailDTO.RoomName ?? room.RoomName;
-            room.Location = roomDetailDTO.Location;
-            room.RoomType = roomDetailDTO.RoomType ?? room.RoomType;
+            room.RoomName = updateRoomDetailDTO.RoomName ?? room.RoomName;
+            room.Location = updateRoomDetailDTO.Location;
+            room.RoomType = updateRoomDetailDTO.RoomType ?? room.RoomType;
             _context.Rooms.Update(room);
             await _context.SaveChangesAsync();
             return room.ToRoomDetailDTO();

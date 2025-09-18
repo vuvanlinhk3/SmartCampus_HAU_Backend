@@ -77,15 +77,15 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpPut("booking/update/{bookingId}")]
-        public async Task<IActionResult> UpdateBooking([FromRoute] int bookingId, [FromBody] BookingDTO bookingDTO)
+        public async Task<IActionResult> UpdateBooking([FromRoute] int bookingId, [FromBody] UpdateBookingDTO updateBookingDTO)
         {
-            if (bookingDTO == null)
+            if (updateBookingDTO == null)
             {
                 return new BadRequestObjectResult("Invalid booking data.");
             }
             try
             {
-                var result = await _bookingService.UpdateBookingAsync(bookingId, bookingDTO);
+                var result = await _bookingService.UpdateBookingAsync(bookingId, updateBookingDTO);
                 return new OkObjectResult(result);
             }
             catch (Exception ex)

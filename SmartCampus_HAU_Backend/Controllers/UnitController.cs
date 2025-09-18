@@ -63,15 +63,29 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpPut("room/unit/update/{unitId}")]
-        public async Task<IActionResult> UpdateUnit([FromRoute] int unitId, [FromBody] UnitDTO unitDTO)
+        public async Task<IActionResult> UpdateUnit([FromRoute] int unitId, [FromBody] UpdateUnitDTO updateUnitDTO)
         {
-            if (unitDTO == null)
+            if (updateUnitDTO == null)
             {
                 return new BadRequestObjectResult("Invalid unit data.");
             }
             try
             {
-                var result = await _unitService.UpdateUnitAsync(unitId, unitDTO);
+                var result = await _unitService.UpdateUnitAsync(unitId, updateUnitDTO);
+                return new OkObjectResult(result);
+            }
+            catch (Exception ex)
+            {
+                return new StatusCodeResult(500);
+            }
+        }
+
+        [HttpPut("room/unit/toggle/{unitId}")]
+        public async Task<IActionResult> UpdateUnitStatus([FromRoute] int unitId, [FromQuery] bool status, [FromQuery] string? notes = null)
+        {
+            try
+            {
+                var result = await _unitService.UpdateUnitStatusAsync(unitId, status, notes);
                 return new OkObjectResult(result);
             }
             catch (Exception ex)

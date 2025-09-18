@@ -72,20 +72,20 @@ namespace SmartCampus_HAU_Backend.Services
             return booking.ToBookingDTO();
         }
 
-        public async Task<BookingDTO> UpdateBookingAsync(int bookingId, BookingDTO bookingDTO)
+        public async Task<BookingDTO> UpdateBookingAsync(int bookingId, UpdateBookingDTO updateBookingDTO)
         {
             var booking = await _context.Bookings.FindAsync(bookingId);
             if (booking == null)
             {
                 throw new NotFoundException($"Booking with ID {bookingId} not found.");
             }
-            booking.ClassName = bookingDTO.ClassName;
-            booking.Subject = bookingDTO.Subject;
-            booking.Teacher = bookingDTO.Teacher;
-            booking.RegisteredBy = bookingDTO.RegisteredBy;
-            booking.BookingDate = bookingDTO.BookingDate;
-            booking.StartPeriod = bookingDTO.StartPeriod;
-            booking.Periods = bookingDTO.Periods;
+            booking.ClassName = updateBookingDTO.ClassName;
+            booking.Subject = updateBookingDTO.Subject;
+            booking.Teacher = updateBookingDTO.Teacher;
+            booking.RegisteredBy = updateBookingDTO.RegisteredBy;
+            booking.BookingDate = updateBookingDTO.BookingDate;
+            booking.StartPeriod = updateBookingDTO.StartPeriod;
+            booking.Periods = updateBookingDTO.Periods;
             await _context.SaveChangesAsync();
             return booking.ToBookingDTO();
         }

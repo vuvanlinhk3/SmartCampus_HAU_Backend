@@ -1,8 +1,6 @@
 ﻿using SmartCampus_HAU_Backend.Services.Interfaces;
 using SmartCampus_HAU_Backend.Models.DTOs.Rooms;
 using Microsoft.AspNetCore.Mvc;
-using SmartCampus_HAU_Backend.Exceptions.CustomExceptions;
-using SmartCampus_HAU_Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 
 namespace SmartCampus_HAU_Backend.Controllers
@@ -81,15 +79,15 @@ namespace SmartCampus_HAU_Backend.Controllers
         }
 
         [HttpPut("room/update/{roomId}")]
-        public async Task<IActionResult> UpdateRoom( [FromRoute] int roomId, [FromBody] RoomDetailDTO roomDetailDTO)
+        public async Task<IActionResult> UpdateRoom( [FromRoute] int roomId, [FromBody] UpdateRoomDetailDTO updateRoomDetailDTO)
         {
-            if (roomId <= 0 || roomDetailDTO == null)
+            if (roomId <= 0 || updateRoomDetailDTO == null)
             {
                 return new BadRequestObjectResult("Invalid room data.");
             }
             try
             {
-                var updatedRoom = await _roomService.UpdateRoomAsync(roomId, roomDetailDTO);
+                var updatedRoom = await _roomService.UpdateRoomAsync(roomId, updateRoomDetailDTO);
                 return new OkObjectResult(updatedRoom);
             }
             catch (Exception ex)
