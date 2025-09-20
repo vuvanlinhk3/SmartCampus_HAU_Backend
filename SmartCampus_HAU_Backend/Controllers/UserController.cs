@@ -3,6 +3,7 @@ using SmartCampus_HAU_Backend.Models.DTOs.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using SmartCampus_HAU_Backend.Extensions;
 
 namespace SmartCampus_HAU_Backend.Controllers
 {
@@ -107,15 +108,10 @@ namespace SmartCampus_HAU_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changePasswordDTO)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized("Token không hợp lệ hoặc đã hết hạn");
-            }
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized("Vui lòng đăng nhập để sử dụng chức năng này");
             }
 
             var result = await _userService.ChangePasswordAsync(userId, changePasswordDTO);
@@ -131,15 +127,10 @@ namespace SmartCampus_HAU_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateUserInfo([FromBody] UpdateUserInfoDTO updateUserInfoDTO)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized("Token không hợp lệ hoặc đã hết hạn");
-            }
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized("Vui lòng đăng nhập để sử dụng chức năng này");
             }
 
             return await _userService.UpdateUserInfoAsync(userId, updateUserInfoDTO);
@@ -149,17 +140,11 @@ namespace SmartCampus_HAU_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> GetUserInfo()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized("Token không hợp lệ hoặc đã hết hạn");
             }
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized("Vui lòng đăng nhập để sử dụng chức năng này");
-            }
-
             return await _userService.GetUserInfoAsync(userId);
         }
 

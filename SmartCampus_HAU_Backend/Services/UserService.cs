@@ -5,6 +5,7 @@ using SmartCampus_HAU_Backend.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SmartCampus_HAU_Backend.Extensions;
 
 namespace SmartCampus_HAU_Backend.Services
 {
